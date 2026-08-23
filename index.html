@@ -1,0 +1,3682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Всё под рукой – Личный планер</title>
+    <meta name="author" content="@six7_hub">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root, [data-mode="light"] {
+            --bg: #FDFBF7;
+            --card: #FFFFFF;
+            --text: #1e293b;
+            --muted: #94a3b8;
+            --border: #e2e8f0;
+            --primary: #FCA5A5;
+            --primary-dark: #F87171;
+            --secondary: #93C5FD;
+            --secondary-dark: #60A5FA;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --nav-height: 64px;
+        }
+        [data-mode="dark"] {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        [data-theme="theme-coral"] { --primary: #FCA5A5; --primary-dark: #F87171; --secondary: #93C5FD; --secondary-dark: #60A5FA; }
+        [data-theme="theme-mint"] { --primary: #6EE7B7; --primary-dark: #34d399; --secondary: #FCD34D; --secondary-dark: #fbbf24; }
+        [data-theme="theme-lavender"] { --primary: #C4B5FD; --primary-dark: #a78bfa; --secondary: #F9A8D4; --secondary-dark: #ec4899; }
+        [data-theme="theme-peach"] { --primary: #FDBA74; --primary-dark: #fb923c; --secondary: #FDE68A; --secondary-dark: #fbbf24; }
+        [data-theme="theme-sky"] { --primary: #7DD3FC; --primary-dark: #38bdf8; --secondary: #FCA5A5; --secondary-dark: #F87171; }
+        [data-theme="theme-dark"] { --primary: #94a3b8; --primary-dark: #64748b; --secondary: #475569; --secondary-dark: #334155; }
+        [data-theme="theme-rainbow"] { --primary: #FCA5A5; --primary-dark: #F87171; --secondary: #93C5FD; --secondary-dark: #60A5FA; }
+        [data-theme="theme-crystal"] { --primary: #93C5FD; --primary-dark: #60A5FA; --secondary: #C4B5FD; --secondary-dark: #a78bfa; }
+        [data-theme="theme-fire"] { --primary: #FCA5A5; --primary-dark: #ef4444; --secondary: #FDBA74; --secondary-dark: #f97316; }
+        [data-theme="theme-star"] { --primary: #FCD34D; --primary-dark: #fbbf24; --secondary: #C4B5FD; --secondary-dark: #a78bfa; }
+        [data-theme="theme-royal"] { --primary: #FCD34D; --primary-dark: #f59e0b; --secondary: #C4B5FD; --secondary-dark: #8b5cf6; }
+        [data-theme="theme-cosmic"] { --primary: #818cf8; --primary-dark: #6366f1; --secondary: #a78bfa; --secondary-dark: #8b5cf6; }
+        * { box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        body.force-mobile {
+            padding-bottom: calc(var(--nav-height) + 20px);
+        }
+        .card { background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: 16px; transition: all 0.3s; }
+        .text-muted { color: var(--muted); }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 9999px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; transition: all 0.25s; white-space: nowrap; background: transparent; color: var(--text); min-height: 40px; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--secondary); color: #fff; }
+        .btn-secondary:hover { background: var(--secondary-dark); }
+        .btn-outline { border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--border); }
+        .inline-input { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: var(--text); font-size: 14px; width: 100%; transition: all 0.2s; }
+        .inline-input:hover { border-color: var(--muted); }
+        .inline-input:focus { outline: none; border-color: var(--secondary); }
+        .inline-input::placeholder { color: var(--muted); }
+        [data-mode="dark"] .inline-input { background: rgba(255,255,255,0.05); border-color: var(--border); color: #fff; }
+        .habit-checkbox { appearance: none; width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; background: var(--card); position: relative; flex-shrink: 0; }
+        .habit-checkbox:checked { background: var(--primary); border-color: var(--primary-dark); }
+        .habit-checkbox:checked::after { content: ""; position: absolute; left: 7px; top: 2px; width: 6px; height: 12px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        .habit-checkbox:disabled { opacity: 0.25; cursor: not-allowed; }
+        .tab-btn { padding: 10px 18px; border-radius: 14px 14px 0 0; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--muted); transition: all 0.25s; white-space: nowrap; }
+        .tab-btn.active { background: var(--card); color: var(--text); border-color: var(--border); border-bottom: none; }
+        .tab-btn:not(.active):hover { color: var(--text); }
+        .theme-btn { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.25s; position: relative; flex-shrink: 0; }
+        .theme-btn.active { border-color: var(--text); }
+        .theme-btn.locked { opacity: 0.35; }
+        .theme-btn.locked::after { content: "🔒"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; }
+        .onboarding-highlight { position: absolute; border: 3px solid var(--primary-dark); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); transition: all 0.4s ease; pointer-events: none; z-index: 2001; }
+        .onboarding-tooltip { position: fixed; background: var(--card); color: var(--text); border-radius: 16px; padding: 20px; max-width: 360px; max-height: 85vh; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); pointer-events: auto; z-index: 2002; display: flex; flex-direction: column; }
+        .onboarding-tooltip .tooltip-content { overflow-y: auto; flex: 1; margin-bottom: 12px; }
+        .welcome-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
+        .welcome-card { background: var(--card); color: var(--text); border-radius: 24px; padding: 28px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        .progress-bar { height: 8px; background: var(--border); border-radius: 9999px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 9999px; transition: width 0.4s ease; }
+        .chart-container { position: relative; height: 180px; width: 100%; }
+        .achievement-badge { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--card); border: 2px solid var(--border); transition: all 0.3s; margin: 0 auto; }
+        .achievement-badge.unlocked { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); z-index: 4000; animation: slideUp 0.3s ease-out; max-width: 320px; }
+        .level-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card); border: 2px solid var(--primary); border-radius: 16px; padding: 16px 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; animation: slideDown 0.4s ease-out; text-align: center; min-width: 280px; }
+        @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -30px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .level-bar { height: 14px; background: var(--border); border-radius: 9999px; overflow: hidden; }
+        .level-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary-dark)); border-radius: 9999px; transition: width 0.6s ease; }
+        .goal-check { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid var(--border); background: var(--card); display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 11px; color: #fff; flex-shrink: 0; }
+        .goal-check.completed { background: #34d399; border-color: #10b981; }
+        .subtask-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; }
+        .subgoal-item { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .pet-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 3px solid var(--border); cursor: pointer; transition: all 0.25s; background: var(--card); }
+        .pet-avatar:hover { transform: scale(1.1); }
+        .pet-avatar.selected { border-color: var(--primary); }
+        .avatar-svg { width: 48px; height: 48px; border-radius: 50%; cursor: pointer; transition: all 0.25s; border: 3px solid transparent; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; background: var(--card); }
+        .avatar-svg:hover { transform: scale(1.1); }
+        .avatar-svg.selected { border-color: var(--primary); }
+        .avatar-svg.locked { opacity: 0.3; cursor: not-allowed; }
+        .border-bronze { border-color: #cd7f32; }
+        .border-silver { border-color: #c0c0c0; }
+        .border-gold { border-color: #ffd700; }
+        .border-neon { border-color: #0ff; box-shadow: 0 0 10px #0ff, 0 0 20px #0ff; }
+        .border-rainbow { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, linear-gradient(135deg, #8b5cf6, #6366f1, #3b82f6, #0ea5e9, #06b6d4, #14b8a6, #8b5cf6, #6366f1) border-box; box-shadow: 0 0 10px #8b5cf6, 0 0 20px #3b82f6, 0 0 30px #06b6d4; }
+        .mini-tab { padding: 6px 14px; border-radius: 9999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: transparent; color: var(--muted); min-height: 36px; }
+        .mini-tab.active { background: var(--primary); border-color: var(--primary-dark); color: #fff; }
+        .level-up-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 5000; background: rgba(0,0,0,0.6); }
+        .level-up-card { background: var(--card); color: var(--text); border-radius: 24px; padding: 32px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        .settings-panel { position: fixed; top: 60px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; display: none; max-width: 340px; max-height: 80vh; overflow-y: auto; }
+        .settings-panel.open { display: block; }
+        .habit-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .nowrap { white-space: nowrap; }
+        .input-with-delete { padding-right: 30px; }
+        .day-selector-btn { width: 36px; height: 36px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; border: 2px solid var(--border); background: var(--card); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; user-select: none; position: relative; }
+        .day-selector-btn:hover { border-color: var(--primary); color: var(--primary-dark); transform: translateY(-1px); }
+        .day-selector-btn:active { transform: scale(0.92); }
+        .day-selector-btn.active { background: var(--primary); border-color: var(--primary-dark); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .docs-nav { display: flex; flex-direction: column; gap: 4px; }
+        .docs-nav-btn { text-align: left; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; background: transparent; color: var(--muted); transition: all 0.2s; min-height: 44px; }
+        .docs-nav-btn:hover { background: var(--border); color: var(--text); }
+        .docs-nav-btn.active { background: var(--primary); color: #fff; }
+        .docs-content { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; min-height: 400px; }
+        .docs-content h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+        .docs-content h4 { font-size: 15px; font-weight: 600; margin-top: 16px; margin-bottom: 8px; color: var(--text); }
+        .docs-content p { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.6; }
+        .docs-content code { background: var(--border); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--text); }
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .mobile-nav-inner {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .mobile-nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 9px;
+            font-weight: 600;
+            padding: 4px 8px;
+            min-height: 44px;
+            min-width: 60px;
+            transition: all 0.2s;
+        }
+        .mobile-nav-btn .nav-icon { font-size: 22px; line-height: 1; }
+        .mobile-nav-btn.active { color: var(--primary-dark); }
+        .fab {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 16px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.25s;
+            align-items: center;
+            justify-content: center;
+        }
+        .fab:hover { background: var(--primary-dark); transform: scale(1.05); }
+        .fab:active { transform: scale(0.95); }
+        .mobile-habits-view, .mobile-tasks-view, .mobile-finance-view {
+            display: none;
+        }
+        .mobile-habit-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow);
+        }
+        .mobile-day-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mobile-day-btn.active {
+            background: var(--primary);
+            border-color: var(--primary-dark);
+            color: #fff;
+        }
+        .mobile-task-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mobile-task-card.pinned { border-left: 3px solid var(--primary); }
+        .mobile-task-details { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+        .mobile-task-card.expanded .mobile-task-details { display: block; }
+        .mobile-subtab {
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            min-height: 36px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .mobile-subtab.active { background: var(--primary); border-color: var(--primary-dark); color: #fff; }
+        .mobile-finance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .mobile-finance-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-card .stat-icon { font-size: 24px; margin-bottom: 4px; }
+        .stat-card .stat-value { font-size: 20px; font-weight: 700; }
+        .stat-card .stat-label { font-size: 11px; color: var(--muted); }
+        .mobile-habit-calendar { margin-top: 8px; }
+        .calendar-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 0;
+            scrollbar-width: thin;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 30px);
+            gap: 4px;
+            min-width: max-content;
+        }
+        .calendar-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .calendar-day span { font-size: 10px; color: var(--muted); font-weight: 600; }
+        .calendar-day .habit-checkbox { width: 20px; height: 20px; }
+        body.force-desktop .mobile-nav { display: none !important; }
+        body.force-desktop .fab { display: none !important; }
+        body.force-desktop .mobile-habits-view { display: none !important; }
+        body.force-desktop .mobile-tasks-view { display: none !important; }
+        body.force-desktop .mobile-finance-view { display: none !important; }
+        body.force-desktop .desktop-nav { display: flex !important; }
+        body.force-desktop .desktop-habits-table { display: block !important; }
+        body.force-desktop .desktop-tasks-table { display: block !important; }
+        body.force-desktop .desktop-finance-tables { display: block !important; }
+        body.force-mobile .desktop-nav { display: none !important; }
+        body.force-mobile .desktop-habits-table { display: none !important; }
+        body.force-mobile .desktop-tasks-table { display: none !important; }
+        body.force-mobile .desktop-finance-tables { display: none !important; }
+        body.force-mobile .mobile-nav { display: block !important; }
+        body.force-mobile .fab { display: flex !important; }
+        body.force-mobile .mobile-habits-view { display: block !important; }
+        body.force-mobile .mobile-tasks-view { display: block !important; }
+        body.force-mobile .mobile-finance-view { display: block !important; }
+        @media print {
+            .settings-panel, .onboarding-overlay, .welcome-overlay, .level-up-overlay, .toast, .level-toast, .no-print, .mobile-nav, .fab, .mobile-habits-view, .mobile-tasks-view, .mobile-finance-view {
+                display: none !important;
+            }
+            body { background: #fff; padding-bottom: 0; }
+            .card { box-shadow: none; }
+        }
+        @media (max-width: 768px) {
+            body.force-mobile .mobile-finance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body data-mode="light" data-theme="theme-coral" class="min-h-screen flex justify-center py-3 px-2 sm:px-4">
+<!-- Всё под рукой · Автор: @six7_hub · Канал: t.me/six7_hub · Код написан дипсиком — нейросетью, которая периодически тупит, путается в требованиях и несёт чушь. Но автору хватило терпения. -->
+
+<!-- РЕГИСТРАЦИЯ -->
+<div id="welcomeOverlay" class="welcome-overlay" style="display:none;">
+    <div class="welcome-card">
+        <div class="text-5xl mb-3">🗂️</div>
+        <h1 class="text-2xl font-bold mb-1">Всё под рукой</h1>
+        <p class="text-xs text-muted mb-3">Проект ТГ-канала «Пиксель и строчка»</p>
+        <p class="text-muted mb-4 text-sm">Твой личный органайзер: привычки, задачи, финансы</p>
+        <div class="space-y-3 text-left">
+            <div>
+                <label class="text-xs text-muted">Твоё имя</label>
+                <input type="text" id="nicknameInput" placeholder="Например, Алекс" class="inline-input text-base" maxlength="20">
+            </div>
+            <div>
+                <label class="text-xs text-muted">Выбери устройство</label>
+                <div class="flex gap-2 mt-1">
+                    <button id="deviceMobileBtn" class="btn btn-outline text-sm flex-1 justify-center">📱 Телефон</button>
+                    <button id="deviceDesktopBtn" class="btn btn-outline text-sm flex-1 justify-center">💻 Компьютер</button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs text-muted">Выбери аватарку</label>
+                <div class="flex gap-2 justify-center flex-wrap" id="petSelector">
+                    <button class="pet-avatar selected" data-pet="cat" title="Кот">🐱</button>
+                    <button class="pet-avatar" data-pet="dog" title="Собака">🐶</button>
+                    <button class="pet-avatar" data-pet="dragon" title="Дракон">🐉</button>
+                    <button class="pet-avatar" data-pet="bird" title="Птица">🐦</button>
+                    <button class="pet-avatar" data-pet="bear" title="Медведь">🐻</button>
+                    <button class="pet-avatar" data-pet="frog" title="Лягушка">🐸</button>
+                </div>
+            </div>
+        </div>
+        <button id="startBtn" class="btn btn-primary text-base px-8 py-3 mt-4 w-full justify-center">Начать →</button>
+    </div>
+</div>
+
+<!-- ОНБОРДИНГ -->
+<div id="onboardingOverlay" class="onboarding-overlay" style="display:none;">
+    <div id="onboardingHighlight" class="onboarding-highlight"></div>
+    <div id="onboardingTooltip" class="onboarding-tooltip">
+        <div class="tooltip-content">
+            <div id="stepDots" class="flex gap-1 justify-center mb-3"></div>
+            <h3 id="onboardingTitle" class="font-bold text-lg mb-2"></h3>
+            <p id="onboardingText" class="text-sm text-muted"></p>
+        </div>
+        <div class="flex justify-between items-center">
+            <button id="onboardingSkip" class="btn btn-outline text-xs">Пропустить</button>
+            <button id="onboardingNext" class="btn btn-primary text-sm">Далее →</button>
+        </div>
+    </div>
+</div>
+
+<!-- ТОСТ НОВОГО УРОВНЯ -->
+<div id="levelToast" class="level-toast" style="display:none;">
+    <div class="text-2xl mb-1" id="levelToastIcon">🎉</div>
+    <div class="font-bold" id="levelToastTitle">Новый уровень!</div>
+    <div class="text-sm text-muted" id="levelToastText"></div>
+</div>
+
+<!-- ОКНО НОВОГО ЭТАПА -->
+<div id="levelUpOverlay" class="level-up-overlay" style="display:none;">
+    <div class="level-up-card">
+        <div class="text-5xl mb-3" id="levelUpIcon">🎉</div>
+        <h2 class="text-2xl font-bold mb-2" id="levelUpTitle">Новый этап!</h2>
+        <p class="text-lg mb-1" id="levelUpStage"></p>
+        <p class="text-sm text-muted mb-4" id="levelUpDesc"></p>
+        <button id="levelUpCloseBtn" class="btn btn-primary px-6 py-2">Отлично!</button>
+    </div>
+</div>
+
+<!-- ПАНЕЛЬ НАСТРОЕК -->
+<div id="settingsPanel" class="settings-panel">
+    <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-sm">Настройки</h3>
+        <button id="settingsCloseBtn" class="text-muted text-lg" style="cursor:pointer;background:none;border:none;">✕</button>
+    </div>
+    <div>
+        <label class="text-xs text-muted mb-2 block">Устройство</label>
+        <div class="flex gap-2 mb-3">
+            <button id="settingsMobileBtn" class="btn btn-outline text-xs flex-1">📱 Телефон</button>
+            <button id="settingsDesktopBtn" class="btn btn-outline text-xs flex-1">💻 Компьютер</button>
+        </div>
+    </div>
+    <div>
+        <label class="text-xs text-muted mb-2 block">Тема оформления</label>
+        <div class="flex gap-2 flex-wrap" id="themeSelector"></div>
+    </div>
+    <div class="mt-4 pt-3 border-t" style="border-color:var(--border);">
+        <label class="text-xs text-muted mb-2 block">Данные</label>
+        <div class="flex flex-wrap gap-2">
+            <button id="exportBtn" class="btn btn-outline text-xs">💾 Экспорт</button>
+            <button id="importBtn" class="btn btn-outline text-xs">📥 Импорт</button>
+            <button id="printBtn" class="btn btn-outline text-xs">🖨️ Печать</button>
+            <button id="resetAllBtn" class="btn btn-outline text-xs" style="color:var(--primary-dark);">🔄 Сброс</button>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+    <div class="mt-4 pt-3 border-t" style="border-color:var(--border);">
+        <p class="text-xs text-muted">© 2026 t.me/six7_hub · Пиксель и строчка</p>
+    </div>
+</div>
+
+<!-- МОБИЛЬНАЯ НАВИГАЦИЯ -->
+<nav class="mobile-nav no-print">
+    <div class="mobile-nav-inner">
+        <button class="mobile-nav-btn active" data-mobile-tab="tab1">
+            <span class="nav-icon">📅</span><span>Привычки</span>
+        </button>
+        <button class="mobile-nav-btn" data-mobile-tab="tab2">
+            <span class="nav-icon">📝</span><span>Задачи</span>
+        </button>
+        <button class="mobile-nav-btn" data-mobile-tab="tab3">
+            <span class="nav-icon">📊</span><span>Финансы</span>
+        </button>
+        <button class="mobile-nav-btn" data-mobile-tab="tab4">
+            <span class="nav-icon">📖</span><span>Инструкция</span>
+        </button>
+        <button class="mobile-nav-btn" data-mobile-tab="tab5">
+            <span class="nav-icon">🏆</span><span>Прогресс</span>
+        </button>
+    </div>
+</nav>
+
+<!-- FAB КНОПКА -->
+<button id="fabBtn" class="fab no-print" title="Добавить">+</button>
+
+<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<div class="w-full max-w-7xl rounded-3xl overflow-hidden border" style="border-color:var(--border);background:var(--bg);">
+    <header class="no-print px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2 border-b" style="border-color:var(--border);background:var(--card);">
+        <div class="flex items-center gap-3">
+            <div class="pet-avatar" id="headerPet" style="width:44px;height:44px;font-size:26px;" title="Нажми, чтобы настроить профиль">🐱</div>
+            <div>
+                <h1 class="text-lg font-bold" id="headerNickname">Всё под рукой</h1>
+                <p class="text-xs text-muted">от Пиксель и строчка · <span id="headerLevel">🌱 Новичок · Уровень 1</span></p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+            <button id="darkModeBtn" class="btn btn-outline text-sm" title="Ночной режим">🌙</button>
+            <button id="settingsToggleBtn" class="btn btn-outline text-sm">⚙️ Настройки</button>
+            <button id="tgButton" class="btn btn-secondary text-sm">📱 Telegram</button>
+        </div>
+    </header>
+
+    <nav class="desktop-nav no-print px-4 sm:px-6 pt-3 pb-0 flex gap-1 overflow-x-auto border-b" style="border-color:var(--border);">
+        <button class="tab-btn active" data-tab="tab1">📅 Привычки</button>
+        <button class="tab-btn" data-tab="tab2">📝 Задачи</button>
+        <button class="tab-btn" data-tab="tab3">📊 Финансы</button>
+        <button class="tab-btn" data-tab="tab4">📖 Инструкция</button>
+        <button class="tab-btn" data-tab="tab5">🏆 Прогресс</button>
+    </nav>
+
+    <main class="p-4 sm:p-6 min-h-[600px]">
+        <!-- ВКЛАДКА 1: ПРИВЫЧКИ -->
+        <div id="tab1" class="tab-panel space-y-5">
+            <!-- МОБИЛЬНЫЕ ПОДВКЛАДКИ -->
+            <div class="mobile-subtabs flex gap-2 overflow-x-auto pb-2" id="mobileHabitSubtabs" style="display:none;">
+                <button class="mobile-subtab active" data-mobile-subtab="habits-goals">🌍 Цели</button>
+                <button class="mobile-subtab" data-mobile-subtab="habits-tracker">📋 Трекер</button>
+                <button class="mobile-subtab" data-mobile-subtab="habits-monthly">📌 Ежемес.</button>
+                <button class="mobile-subtab" data-mobile-subtab="habits-notes">📝 Заметки</button>
+                <button class="mobile-subtab" data-mobile-subtab="habits-analytics">📊 Аналитика</button>
+            </div>
+
+            <!-- МОБИЛЬНЫЕ СЕКЦИИ -->
+            <section class="card p-5 mobile-habits-view active" id="mobileHabitGoals">
+                <h2 class="text-lg font-bold mb-2">🌍 Цели на год</h2>
+                <p class="text-xs text-muted mb-3">Ставь цели в каждой сфере.</p>
+                <div class="space-y-2" id="mobileAnnualGoals"></div>
+            </section>
+
+            <section class="card p-3 mobile-habits-view" id="mobileHabitTracker" style="display:none;">
+                <div class="flex flex-wrap items-center justify-between mb-3 gap-2">
+                    <h2 class="text-lg font-bold">📋 Трекер привычек</h2>
+                    <input type="month" id="mobileHabitMonth" class="inline-input text-sm" style="width:auto;">
+                </div>
+                <p class="text-xs text-muted mb-1">Выбирай дни недели и отмечай в календаре</p>
+                <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Мы — то, что мы делаем постоянно.» — Аристотель</p>
+                <div id="mobileHabitsList"></div>
+            </section>
+
+            <section class="card p-5 mobile-habits-view" id="mobileHabitMonthly" style="display:none;">
+                <h3 class="font-bold mb-2 text-sm">📌 Ежемесячные задачи</h3>
+                <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Большие дела состоят из маленьких.»</p>
+                <div id="monthlyHabitsContainer"></div>
+            </section>
+
+            <section class="card p-5 mobile-habits-view" id="mobileHabitNotes" style="display:none;">
+                <h3 class="font-bold mb-2 text-sm">📝 Заметки</h3>
+                <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Записанная мысль живёт дольше.»</p>
+                <textarea id="notesArea" rows="10" class="inline-input" placeholder="Пиши мысли, идеи, итоги..."></textarea>
+            </section>
+
+            <section class="card p-5 mobile-habits-view" id="mobileHabitAnalytics" style="display:none;">
+                <h3 class="font-bold mb-2 text-sm">📊 Аналитика</h3>
+                <div class="chart-container"><canvas id="donutChart"></canvas></div>
+                <div id="habitProgressList" class="mt-3 space-y-2"></div>
+            </section>
+
+            <!-- ДЕСКТОПНЫЕ СЕКЦИИ -->
+            <section class="card p-5 desktop-habits-table" id="annualSection">
+                <h2 class="text-lg font-bold mb-2">🌍 Цели на год</h2>
+                <p class="text-xs text-muted mb-3">Ставь цели в каждой сфере. Сложность выбираешь сам.</p>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="annualGoalsContainer">
+                    <div class="p-3 rounded-xl border" style="border-color:var(--border);">
+                        <span class="text-xs font-semibold">💰 Финансы</span>
+                        <div class="mt-1" id="goals-finance"></div>
+                        <button class="text-xs mt-1 btn btn-outline py-1 px-2" onclick="addSubgoal('finance')">+ Цель</button>
+                    </div>
+                    <div class="p-3 rounded-xl border" style="border-color:var(--border);">
+                        <span class="text-xs font-semibold">📚 Саморазвитие</span>
+                        <div class="mt-1" id="goals-spirituality"></div>
+                        <button class="text-xs mt-1 btn btn-outline py-1 px-2" onclick="addSubgoal('spirituality')">+ Цель</button>
+                    </div>
+                    <div class="p-3 rounded-xl border" style="border-color:var(--border);">
+                        <span class="text-xs font-semibold">💼 Карьера</span>
+                        <div class="mt-1" id="goals-career"></div>
+                        <button class="text-xs mt-1 btn btn-outline py-1 px-2" onclick="addSubgoal('career')">+ Цель</button>
+                    </div>
+                    <div class="p-3 rounded-xl border" style="border-color:var(--border);">
+                        <span class="text-xs font-semibold">🌿 Здоровье</span>
+                        <div class="mt-1" id="goals-health"></div>
+                        <button class="text-xs mt-1 btn btn-outline py-1 px-2" onclick="addSubgoal('health')">+ Цель</button>
+                    </div>
+                    <div class="p-3 rounded-xl border" style="border-color:var(--border);">
+                        <span class="text-xs font-semibold">❤️ Отношения</span>
+                        <div class="mt-1" id="goals-relationships"></div>
+                        <button class="text-xs mt-1 btn btn-outline py-1 px-2" onclick="addSubgoal('relationships')">+ Цель</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card p-5 desktop-habits-table" id="habitSection">
+                <div class="flex flex-wrap items-center justify-between mb-3 gap-2">
+                    <h2 class="text-lg font-bold">📋 Трекер привычек</h2>
+                    <input type="month" id="habitMonth" class="inline-input text-sm" style="width:auto;">
+                </div>
+                <p class="text-xs text-muted mb-1">Выбирай дни недели кнопками Пн-Вс.</p>
+                <p class="text-xs mb-3" style="color: var(--secondary-dark); font-style: italic;">«Мы — то, что мы делаем постоянно. Совершенство — не действие, а привычка.» — Аристотель</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[700px]" id="habitTable">
+                        <thead id="habitTableHead"></thead>
+                        <tbody id="habitTableBody"></tbody>
+                    </table>
+                </div>
+                <button id="addHabitRowBtn" class="btn btn-secondary mt-3 text-sm">+ Добавить привычку</button>
+            </section>
+
+            <div class="grid lg:grid-cols-3 gap-4 desktop-habits-table">
+                <div class="card p-5" id="monthlySection">
+                    <h3 class="font-bold mb-2 text-sm">📌 Ежемесячные задачи</h3>
+                    <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Большие дела состоят из маленьких, сделанных вовремя.»</p>
+                    <div id="monthlyHabitsContainerDesktop"></div>
+                </div>
+                <div class="card p-5" id="notesSection">
+                    <h3 class="font-bold mb-2 text-sm">📝 Заметки</h3>
+                    <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Записанная мысль живёт дольше.»</p>
+                    <textarea id="notesAreaDesktop" rows="10" class="inline-input" placeholder="Пиши мысли, идеи, итоги..."></textarea>
+                </div>
+                <div class="card p-5" id="analyticsSection">
+                    <h3 class="font-bold mb-2 text-sm">📊 Аналитика</h3>
+                    <div class="chart-container"><canvas id="donutChartDesktop"></canvas></div>
+                    <div id="habitProgressListDesktop" class="mt-3 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+        <!-- ВКЛАДКА 2: ЗАДАЧИ -->
+        <div id="tab2" class="tab-panel hidden space-y-5">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="card p-3 text-center"><div class="text-xs text-muted">Выполнено</div><div id="tasksDoneKpi" class="text-xl font-bold">0/0</div></div>
+                <div class="card p-3 text-center"><div class="text-xs text-muted">Прогресс</div><div id="progressPercentKpi" class="text-xl font-bold">0%</div></div>
+                <div class="card p-3 text-center"><div class="text-xs text-muted">Дедлайн сегодня</div><div id="todayDeadlineKpi" class="text-xl font-bold">0</div></div>
+                <div class="card p-3 text-center"><div class="text-xs text-muted">Просрочено</div><div id="overdueKpi" class="text-xl font-bold" style="color:var(--primary-dark);">0</div></div>
+            </div>
+            <div class="card p-4">
+                <input type="text" id="taskSearch" placeholder="🔍 Поиск по названию задачи..." class="inline-input">
+            </div>
+
+            <!-- ДЕСКТОП: ТАБЛИЦА ЗАДАЧ -->
+            <div class="card p-5 overflow-x-auto desktop-tasks-table" id="tasksSection">
+                <h2 class="text-lg font-bold mb-2">📋 Мои задачи</h2>
+                <p class="text-xs mb-3" style="color: var(--secondary-dark); font-style: italic;">«Путь в тысячу ли начинается с первого шага.» — Лао-цзы</p>
+                <table class="w-full min-w-[750px] text-sm">
+                    <thead class="text-xs text-muted border-b">
+                        <tr>
+                            <th class="text-left p-2">📌</th>
+                            <th class="text-left p-2">Задача</th>
+                            <th class="p-2">Срок</th>
+                            <th class="p-2">Осталось</th>
+                            <th class="p-2">Приоритет</th>
+                            <th class="p-2">Статус</th>
+                            <th class="p-2">Категория</th>
+                            <th class="p-2">Подзадачи</th>
+                            <th class="p-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody"></tbody>
+                </table>
+                <button id="addTaskRowBtn" class="btn btn-secondary mt-3 text-sm">+ Добавить задачу</button>
+            </div>
+
+            <!-- МОБИЛЬНЫЕ: КАРТОЧКИ ЗАДАЧ -->
+            <div class="card p-3 mobile-tasks-view">
+                <h2 class="text-lg font-bold mb-2">📋 Мои задачи</h2>
+                <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Путь в тысячу ли начинается с первого шага.» — Лао-цзы</p>
+                <div id="mobileTasksList"></div>
+            </div>
+
+            <div class="card p-5">
+                <h3 class="font-bold mb-2 text-sm">🗑️ Корзина</h3>
+                <div id="trashContainer" class="text-sm text-muted">Пусто</div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 3: ФИНАНСЫ -->
+        <div id="tab3" class="tab-panel hidden space-y-5">
+            <!-- МОБИЛЬНЫЕ ПОДВКЛАДКИ -->
+            <div class="mobile-subtabs flex gap-2 overflow-x-auto pb-2" id="mobileFinanceSubtabs" style="display:none;">
+                <button class="mobile-subtab active" data-mobile-subtab="finance-budget">💰 Бюджет</button>
+                <button class="mobile-subtab" data-mobile-subtab="finance-transactions">🧾 Транзакции</button>
+                <button class="mobile-subtab" data-mobile-subtab="finance-overview">📊 Обзор</button>
+            </div>
+
+            <div class="card p-4">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold">📅 Период:</span>
+                    <select id="financePeriod" class="inline-input text-sm" style="width:auto;">
+                        <option value="month">Текущий месяц</option>
+                        <option value="year">Весь год</option>
+                        <option value="all">Всё время</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- МОБИЛЬНЫЕ ФИНАНСЫ -->
+            <div class="card p-3 mobile-finance-view active" id="mobileFinanceBudget">
+                <p class="text-xs text-muted mb-1">Бюджет на месяц</p>
+                <p class="text-xs mb-2" style="color: var(--secondary-dark); font-style: italic;">«Береги копейку — рубль сам сбережётся.»</p>
+                <div class="mobile-finance-grid">
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">💵 Доходы <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('income')">+</button></h4>
+                        <div id="mobileIncomeRows"></div>
+                    </div>
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">📺 Подписки <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('subscriptions')">+</button></h4>
+                        <div id="mobileSubscriptionsRows"></div>
+                    </div>
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">📅 Регулярные <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('regular')">+</button></h4>
+                        <div id="mobileRegularRows"></div>
+                    </div>
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">🛒 Траты <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('spending')">+</button></h4>
+                        <div id="mobileSpendingRows"></div>
+                    </div>
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">🏦 Накопления <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('savings')">+</button></h4>
+                        <div id="mobileSavingsRows"></div>
+                    </div>
+                    <div class="mobile-finance-card">
+                        <h4 class="font-bold mb-1 text-xs flex items-center justify-between">💳 Долги <button class="btn btn-outline text-xs py-0 px-1" onclick="addBudgetItem('debts')">+</button></h4>
+                        <div id="mobileDebtsRows"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-5 mobile-finance-view" id="mobileFinanceTransactions" style="display:none;">
+                <h2 class="text-lg font-bold mb-2">🧾 Транзакции</h2>
+                <p class="text-xs mb-3" style="color: var(--secondary-dark);">⚠️ Сначала добавь подкатегорию в бюджете</p>
+                <div class="space-y-2 mb-3 text-sm">
+                    <input type="date" id="transactionDate" class="inline-input">
+                    <input type="text" id="transactionDesc" placeholder="Описание" class="inline-input">
+                    <select id="transactionCategory" class="inline-input"></select>
+                    <select id="transactionSubcategory" class="inline-input">
+                        <option value="">Подкатегория...</option>
+                    </select>
+                    <input type="number" id="transactionAmount" placeholder="Сколько потрачено" class="inline-input">
+                </div>
+                <button id="addTransactionBtn" class="btn btn-secondary text-sm">+ Добавить</button>
+                <div class="mt-3 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-xs text-muted border-b">
+                            <tr><th class="p-2">Дата</th><th class="p-2">Описание</th><th class="p-2">Категория</th><th class="p-2 nowrap">Сумма</th><th class="p-2"></th></tr>
+                        </thead>
+                        <tbody id="transactionsTableBodyMobile"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card p-5 mobile-finance-view" id="mobileFinanceOverview" style="display:none;">
+                <h2 class="text-lg font-bold mb-2">💰 Обзор</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="financeSummaryTableMobile">
+                        <thead class="text-xs text-muted border-b">
+                            <tr><th class="text-left p-2">Категория</th><th class="p-2 nowrap">План</th><th class="p-2 nowrap">Факт</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="chart-container mt-3"><canvas id="budgetBarChartMobile"></canvas></div>
+            </div>
+
+            <!-- ДЕСКТОП: ФИНАНСЫ -->
+            <div class="card p-5 desktop-finance-tables">
+                <p class="text-xs text-muted mb-1">Здесь планируй свой бюджет на месяц</p>
+                <p class="text-xs mb-3" style="color: var(--secondary-dark); font-style: italic;">«Береги копейку — рубль сам сбережётся.» — народная мудрость</p>
+                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">💵 Доходы <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('income')">+</button></h4><div id="incomeBudgetRows"></div></div>
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">📺 Подписки <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('subscriptions')">+</button></h4><div id="subscriptionsRows"></div></div>
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">📅 Регулярные <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('regular')">+</button></h4><div id="regularRows"></div></div>
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">🛒 Траты <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('spending')">+</button></h4><div id="spendingRows"></div></div>
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">🏦 Накопления <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('savings')">+</button></h4><div id="savingsRows"></div></div>
+                    <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">💳 Долги <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('debts')">+</button></h4><div id="debtsRows"></div></div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-4 desktop-finance-tables">
+                <div class="card p-5" id="financeSummary">
+                    <h2 class="text-lg font-bold mb-2">💰 Обзор</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" id="financeSummaryTable">
+                            <thead class="text-xs text-muted border-b">
+                                <tr><th class="text-left p-2">Категория</th><th class="p-2 nowrap">Планировал</th><th class="p-2 nowrap">Фактически</th><th class="p-2 nowrap">Ост.</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card p-5">
+                    <h3 class="font-semibold mb-2 text-sm">📊 Планировал vs Фактически</h3>
+                    <div class="chart-container"><canvas id="budgetBarChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="card p-5 desktop-finance-tables">
+                <h3 class="font-semibold mb-2 text-sm">🧾 Расходы по категориям</h3>
+                <div id="expenseLegend" class="space-y-2"></div>
+            </div>
+
+            <div class="card p-5 desktop-finance-tables" id="transactionsSection">
+                <h2 class="text-lg font-bold mb-2">🧾 Транзакции</h2>
+                <p class="text-xs mb-3" style="color: var(--secondary-dark);">⚠️ Чтобы выбрать подкатегорию, сначала добавь её в бюджете</p>
+                <div class="grid md:grid-cols-5 gap-2 mb-3 text-sm">
+                    <input type="date" id="transactionDateDesktop" class="inline-input">
+                    <input type="text" id="transactionDescDesktop" placeholder="Описание" class="inline-input">
+                    <select id="transactionCategoryDesktop" class="inline-input"></select>
+                    <select id="transactionSubcategoryDesktop" class="inline-input">
+                        <option value="">Подкатегория...</option>
+                    </select>
+                    <input type="number" id="transactionAmountDesktop" placeholder="Сколько потрачено" class="inline-input">
+                </div>
+                <button id="addTransactionBtnDesktop" class="btn btn-secondary text-sm">+ Добавить</button>
+                <div class="mt-3 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-xs text-muted border-b">
+                            <tr><th class="p-2">Дата</th><th class="p-2">Описание</th><th class="p-2">Категория</th><th class="p-2">Подкатегория</th><th class="p-2 nowrap">Сумма</th><th class="p-2"></th></tr>
+                        </thead>
+                        <tbody id="transactionsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ВКЛАДКА 4: ИНСТРУКЦИЯ -->
+        <div id="tab4" class="tab-panel hidden">
+            <div class="text-center mb-4">
+                <h2 class="text-2xl font-bold">📖 Инструкция</h2>
+                <p class="text-muted mt-1 text-sm">База знаний по интерфейсу</p>
+                <button id="restartOnboardingBtn" class="btn btn-primary mt-3 text-sm">🔄 Пройти обучение заново</button>
+            </div>
+            <div class="grid md:grid-cols-[220px_1fr] gap-4">
+                <div class="card p-4">
+                    <div class="docs-nav">
+                        <button class="docs-nav-btn active" data-doc="main">🏠 Главная</button>
+                        <button class="docs-nav-btn" data-doc="habits">📅 Привычки</button>
+                        <button class="docs-nav-btn" data-doc="tasks">📝 Задачи</button>
+                        <button class="docs-nav-btn" data-doc="finance">📊 Финансы</button>
+                        <button class="docs-nav-btn" data-doc="profile">👤 Профиль</button>
+                    </div>
+                </div>
+                <div class="docs-content" id="docsContent"></div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 5: ПРОГРЕСС -->
+        <div id="tab5" class="tab-panel hidden space-y-5">
+            <!-- МОБИЛЬНЫЕ ПОДВКЛАДКИ -->
+            <div class="mobile-subtabs flex gap-2 overflow-x-auto pb-2" id="mobileProgressSubtabs" style="display:none;">
+                <button class="mobile-subtab active" data-mobile-subtab="progress-level">⭐ Уровень</button>
+                <button class="mobile-subtab" data-mobile-subtab="progress-profile">👤 Профиль</button>
+                <button class="mobile-subtab" data-mobile-subtab="progress-achievements">🏆 Достижения</button>
+                <button class="mobile-subtab" data-mobile-subtab="progress-stats">📊 Статистика</button>
+            </div>
+
+            <div class="text-center mb-3">
+                <h2 class="text-2xl font-bold">🏆 Прогресс</h2>
+                <p class="text-muted mt-1 text-sm">Твой путь продуктивности</p>
+                <p class="text-xs mt-2" style="color: var(--secondary-dark); font-style: italic;">«Дисциплина — мост между целью и результатом.» — Джим Рон</p>
+            </div>
+
+            <!-- МОБИЛЬНЫЕ СЕКЦИИ ПРОГРЕССА -->
+            <div class="card p-5 mobile-progress-section active" id="mobileProgressLevel">
+                <div id="levelInfoMobile" class="mb-3"></div>
+                <div class="level-bar"><div class="level-bar-fill" id="levelBarFillMobile" style="width:0%"></div></div>
+            </div>
+
+            <div class="card p-5 mobile-progress-section" id="mobileProgressProfile" style="display:none;">
+                <h3 class="font-bold mb-3 text-sm">👤 Профиль</h3>
+                <div class="flex items-center gap-3 mb-3 flex-wrap">
+                    <div class="pet-avatar" id="profilePet" onclick="switchPet()" title="Нажми, чтобы сменить аватарку" style="width:48px;height:48px;font-size:28px;">🐱</div>
+                    <div class="flex-1 min-w-[150px]">
+                        <input type="text" id="profileNickname" class="inline-input text-base font-bold">
+                        <p class="text-xs text-muted mt-1">Нажми на аватарку, чтобы сменить</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="text-xs text-muted mb-2 block">Обводки</label>
+                    <div class="flex gap-2 flex-wrap" id="borderSelector"></div>
+                </div>
+                <div class="mt-3">
+                    <label class="text-xs text-muted mb-2 block">Цвет никнейма</label>
+                    <div class="flex gap-2 flex-wrap" id="nicknameColorSelector"></div>
+                </div>
+            </div>
+
+            <div class="card p-5 mobile-progress-section" id="mobileProgressAchievements" style="display:none;">
+                <div class="flex gap-2 mb-3 flex-wrap">
+                    <button class="mini-tab active" data-ach-tab="all">Все</button>
+                    <button class="mini-tab" data-ach-tab="unlocked">Выполненные</button>
+                    <button class="mini-tab" data-ach-tab="locked">Невыполненные</button>
+                </div>
+                <div id="achievementsContainer" class="grid grid-cols-2 gap-3"></div>
+            </div>
+
+            <div class="card p-5 mobile-progress-section" id="mobileProgressStats" style="display:none;">
+                <h3 class="font-bold mb-3 text-sm">📊 Статистика за всё время</h3>
+                <div class="grid grid-cols-2 gap-2" id="statsContainer"></div>
+            </div>
+
+            <!-- ДЕСКТОПНЫЕ СЕКЦИИ ПРОГРЕССА -->
+            <div class="card p-5 desktop-progress-section">
+                <div id="levelInfo" class="mb-3"></div>
+                <div class="level-bar"><div class="level-bar-fill" id="levelBarFill" style="width:0%"></div></div>
+            </div>
+
+            <div class="card p-5 desktop-progress-section">
+                <h3 class="font-bold mb-3 text-sm">👤 Профиль</h3>
+                <div class="flex items-center gap-3 mb-3 flex-wrap">
+                    <div class="pet-avatar" id="profilePetDesktop" onclick="switchPet()" title="Нажми, чтобы сменить аватарку" style="width:48px;height:48px;font-size:28px;">🐱</div>
+                    <div class="flex-1 min-w-[150px]">
+                        <input type="text" id="profileNicknameDesktop" class="inline-input text-base font-bold">
+                        <p class="text-xs text-muted mt-1">Нажми на аватарку, чтобы сменить</p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="text-xs text-muted mb-2 block">Обводки</label>
+                    <div class="flex gap-2 flex-wrap" id="borderSelectorDesktop"></div>
+                </div>
+                <div class="mt-3">
+                    <label class="text-xs text-muted mb-2 block">Цвет никнейма</label>
+                    <div class="flex gap-2 flex-wrap" id="nicknameColorSelectorDesktop"></div>
+                </div>
+            </div>
+
+            <div class="card p-5 desktop-progress-section">
+                <div class="flex gap-2 mb-3 flex-wrap">
+                    <button class="mini-tab active" data-ach-tab="all">Все</button>
+                    <button class="mini-tab" data-ach-tab="unlocked">Выполненные</button>
+                    <button class="mini-tab" data-ach-tab="locked">Невыполненные</button>
+                </div>
+                <div id="achievementsContainerDesktop" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+            </div>
+
+            <div class="card p-5 desktop-progress-section">
+                <h3 class="font-bold mb-3 text-sm">📊 Статистика за всё время</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="statsContainerDesktop"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="toast" class="toast" style="display:none;"></div>
+<div id="achievementToast" class="toast" style="display:none;border-color:var(--primary);"></div>
+
+<script>
+(function() {
+    console.log('%c Всё под рукой ', 'background: #FCA5A5; color: #fff; font-size: 20px; font-weight: bold; padding: 10px; border-radius: 8px;');
+    console.log('%c Автор: @six7_hub · t.me/six7_hub ', 'background: #93C5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');
+    console.log('%c Код писал дипсик. Он старался, но вышло не сразу. ', 'background: #C4B5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');
+    console.log('%c Зато теперь работает. ', 'color: #34d399; font-size: 12px;');
+
+    const STORAGE_KEY = 'six7_hub_data';
+    const SETTINGS_KEY = 'six7_hub_settings';
+    const ONBOARDING_KEY = 'six7_hub_onboarding';
+    const FIRST_LAUNCH_KEY = 'six7_hub_first_launch';
+    const DEVICE_KEY = 'device_mode';
+    const TG_LINK = 'https://t.me/six7_hub';
+
+    const APP_INFO = {
+        name: 'Всё под рукой',
+        author: '@six7_hub',
+        channel: 't.me/six7_hub',
+        version: '1.0.0',
+        made_with: 'дипсик, который запутался, написал чепухи, но в итоге код получился',
+        note: 'Открыт для улучшений.'
+    };
+
+    function getToday() {
+        return new Date().toISOString().split('T')[0];
+    }
+
+    const LEVELS = [
+        { stage: '🌱 Новичок', desc: 'Каждый путь начинается с первого шага', sub: ['Начало пути', 'Первый шаг', 'Робкий старт', 'Любопытный', 'Проснувшийся'], xpPerLevel: 20 },
+        { stage: '🌿 Ученик', desc: 'Ты уже втянулся и учишься', sub: ['Втянулся', 'Старательный', 'Упорный', 'Внимательный', 'Понятливый'], xpPerLevel: 30 },
+        { stage: '🔥 Активист', desc: 'Энергия бьёт ключом', sub: ['Загорелся', 'Энергичный', 'Действующий', 'Неутомимый', 'Инициативный'], xpPerLevel: 40 },
+        { stage: '⚡ Энтузиаст', desc: 'Ты заряжен и вдохновлён', sub: ['Искра', 'Вспышка', 'Заряженный', 'Пылающий', 'Вдохновлённый'], xpPerLevel: 50 },
+        { stage: '💪 Мастер', desc: 'Навыки отточены до блеска', sub: ['Умелец', 'Ловкий', 'Опытный', 'Точный', 'Искусный'], xpPerLevel: 75 },
+        { stage: '🎖️ Ветеран', desc: 'Опыт — твоя суперсила', sub: ['Закалённый', 'Стойкий', 'Непробиваемый', 'Железный', 'Неудержимый'], xpPerLevel: 100 },
+        { stage: '🎯 Профи', desc: 'Работаешь как эксперт', sub: ['Специалист', 'Эксперт', 'Ас', 'Профессионал', 'Виртуоз'], xpPerLevel: 125 },
+        { stage: '🧭 Следопыт', desc: 'Исследуешь новые горизонты', sub: ['Исследователь', 'Наблюдатель', 'Новатор', 'Открыватель', 'Путешественник'], xpPerLevel: 150 },
+        { stage: '🚀 Титан', desc: 'Мощь, которую все замечают', sub: ['Мощный', 'Несокрушимый', 'Гигант', 'Колосс', 'Монументальный'], xpPerLevel: 200 },
+        { stage: '🌟 Миф', desc: 'Великий, как древние сказания', sub: ['Сказание', 'Предание', 'Великий', 'Эпический', 'Мифический'], xpPerLevel: 250 },
+        { stage: '💎 Легенда', desc: 'Твоя история вдохновляет других', sub: ['Драгоценный', 'Редкий', 'Бесценный', 'Уникальный', 'Совершенный'], xpPerLevel: 350 },
+        { stage: '🏔️ Пик', desc: 'Абсолютная вершина мастерства', sub: ['Покоритель', 'Первопроходец', 'Мастер горы', 'Высотник', 'Вершина'], xpPerLevel: 610 }
+    ];
+
+    const THEMES = [
+        { id: 'theme-coral', name: 'Коралл', color: '#FCA5A5', unlockLevel: 0 },
+        { id: 'theme-mint', name: 'Мята', color: '#6EE7B7', unlockLevel: 0 },
+        { id: 'theme-lavender', name: 'Лаванда', color: '#C4B5FD', unlockLevel: 0 },
+        { id: 'theme-peach', name: 'Персик', color: '#FDBA74', unlockLevel: 0 },
+        { id: 'theme-sky', name: 'Небо', color: '#7DD3FC', unlockLevel: 21 },
+        { id: 'theme-dark', name: 'Тёмная', color: '#64748b', unlockLevel: 26 },
+        { id: 'theme-rainbow', name: 'Радужная', color: 'linear-gradient(135deg,#FCA5A5,#93C5FD)', unlockLevel: 31 },
+        { id: 'theme-crystal', name: 'Кристальная', color: '#93C5FD', unlockLevel: 36 },
+        { id: 'theme-fire', name: 'Огненная', color: '#ef4444', unlockLevel: 41 },
+        { id: 'theme-star', name: 'Звёздная', color: '#FCD34D', unlockLevel: 46 },
+        { id: 'theme-royal', name: 'Королевская', color: '#f59e0b', unlockLevel: 51 },
+        { id: 'theme-cosmic', name: 'Космическая', color: '#818cf8', unlockLevel: 56 }
+    ];
+
+    const PETS = {
+        cat: { icon: '🐱', name: 'Кот' },
+        dog: { icon: '🐶', name: 'Собака' },
+        dragon: { icon: '🐉', name: 'Дракон' },
+        bird: { icon: '🐦', name: 'Птица' },
+        bear: { icon: '🐻', name: 'Медведь' },
+        frog: { icon: '🐸', name: 'Лягушка' }
+    };
+
+    const BORDERS = [
+        { id: 'border-default', name: 'Базовая', class: '', unlockLevel: 0 },
+        { id: 'border-bronze', name: 'Бронзовая', class: 'border-bronze', unlockLevel: 5 },
+        { id: 'border-silver', name: 'Серебряная', class: 'border-silver', unlockLevel: 15 },
+        { id: 'border-gold', name: 'Золотая', class: 'border-gold', unlockLevel: 30 },
+        { id: 'border-neon', name: 'Неоновая', class: 'border-neon', unlockLevel: 45 },
+        { id: 'border-rainbow', name: 'Космическая', class: 'border-rainbow', unlockLevel: 60 }
+    ];
+
+    const NICKNAME_COLORS = [
+        { color: '#1e293b', name: 'Тёмный', unlockLevel: 0 },
+        { color: '#ef4444', name: 'Красный', unlockLevel: 0 },
+        { color: '#f97316', name: 'Оранжевый', unlockLevel: 0 },
+        { color: '#f59e0b', name: 'Золотой', unlockLevel: 11 },
+        { color: '#10b981', name: 'Изумрудный', unlockLevel: 16 },
+        { color: '#3b82f6', name: 'Синий', unlockLevel: 21 },
+        { color: '#8b5cf6', name: 'Фиолетовый', unlockLevel: 31 },
+        { color: '#ec4899', name: 'Розовый', unlockLevel: 41 },
+        { color: '#14b8a6', name: 'Бирюзовый', unlockLevel: 51 },
+        { color: '#6366f1', name: 'Индиго', unlockLevel: 56 }
+    ];
+
+    const ACHIEVEMENTS = {
+        habits_count: { name: 'Собиратель', icon: '📋', levels: [1,3,5,8,10,15,20,30,40,50], xpPerLevel: 5, metric: () => appData.habits.length },
+        habit_checks: { name: 'Отметки', icon: '✅', levels: [10,25,50,75,100,150,200,300,400,500,650,800,1000,1250,1500], xpPerLevel: 5, metric: () => { let total = 0; appData.habits.forEach(h => { if (h.monthlyDays) { for (const m in h.monthlyDays) { total += h.monthlyDays[m].filter(Boolean).length; } } }); return total; } },
+        tasks_count: { name: 'Менеджер', icon: '📊', levels: [1,3,5,10,15,20,30,40,50,75,100], xpPerLevel: 5, metric: () => appData.tasks.length },
+        subtasks_count: { name: 'Декомпозитор', icon: '🧩', levels: [1,3,5,10,15,25,40,60,80,100], xpPerLevel: 5, metric: () => appData.tasks.reduce((s,t) => s + (t.subtasks ? t.subtasks.length : 0), 0) },
+        transactions_count: { name: 'Финансист', icon: '💰', levels: [1,3,5,10,15,20,30,40,50,75,100,150,200], xpPerLevel: 5, metric: () => appData.transactions.length },
+        streak_days: { name: 'Серия', icon: '📅', levels: [3,5,7,10,14,18,21,25,30,40,50,60,75,90], xpPerLevel: 5, metric: () => calculateStreak() },
+        perfect_day: { name: 'Идеальный день', icon: '🌈', levels: [1,3,5,10,15,20,30,40,50,75,100], xpPerLevel: 5, metric: () => countPerfectDays() },
+        perfect_week: { name: 'Идеальная неделя', icon: '💪', levels: [1,2,3,5,7,10,14,18,25,35], xpPerLevel: 10, metric: () => countPerfectWeeks() },
+        goals_done: { name: 'Целеустремлённый', icon: '🎯', levels: [1,3,5,8,10,15,20,30], xpPerLevel: 5, metric: () => countGoalsDone() },
+        budget_filled: { name: 'Бюджет-мастер', icon: '📈', levels: [1,3,6], xpPerLevel: 10, metric: () => countBudgetFilled() }
+    };
+
+    const DEFAULT_DATA = {
+        nickname: '',
+        pet: 'cat',
+        nicknameColor: '#1e293b',
+        avatarBorder: 'border-default',
+        _author: '@six7_hub',
+        _channel: 't.me/six7_hub',
+        _version: '1.0.0',
+        annualGoals: { finance: [], spirituality: [], career: [], health: [], relationships: [] },
+        habits: [],
+        monthlyHabits: [],
+        deletedTasks: [],
+        notes: '',
+        tasks: [],
+        transactions: [],
+        achievements: {},
+        totalXP: 0,
+        currentMonth: getToday().slice(0, 7),
+        budget: { income: [], subscriptions: [], regular: [], spending: [], savings: [], debts: [] },
+        xpHistory: {},
+        lastLoginDate: ''
+    };
+
+    let appData = loadData();
+    let settings = loadSettings();
+    const charts = {};
+    const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    let currentOnboardingStep = 0;
+    let achievementTab = 'all';
+    let currentMonth = appData.currentMonth || getToday().slice(0, 7);
+    let isFirstLaunch = !localStorage.getItem(FIRST_LAUNCH_KEY);
+    let deviceMode = localStorage.getItem(DEVICE_KEY) || null;
+    function loadData() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                data.habits.forEach(h => { if (!h.activeDays) h.activeDays = [true,true,true,true,true,true,true]; if (!h.monthlyDays) h.monthlyDays = {}; });
+                data.tasks.forEach(t => { if (!t.subtasks) t.subtasks = []; if (!t.pinned) t.pinned = false; });
+                return data;
+            }
+        } catch(e) {}
+        return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    function saveData() {
+        appData.currentMonth = currentMonth;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function loadSettings() {
+        try { const saved = localStorage.getItem(SETTINGS_KEY); if (saved) return JSON.parse(saved); } catch(e) {}
+        return { theme: 'theme-coral', dark: false };
+    }
+
+    function saveSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+    function fmt(n) { return Number(n).toLocaleString('ru-RU', {maximumFractionDigits:0}); }
+
+    function getLevelInfo(totalXP) {
+        let cumulativeXP = 0;
+        for (let i = 0; i < LEVELS.length; i++) {
+            for (let j = 0; j < 5; j++) {
+                const xpNeeded = LEVELS[i].xpPerLevel;
+                if (totalXP < cumulativeXP + xpNeeded) {
+                    return { stage: LEVELS[i].stage, sub: LEVELS[i].sub[j], level: i * 5 + j + 1, current: totalXP - cumulativeXP, needed: xpNeeded, desc: LEVELS[i].desc, stageIndex: i, subIndex: j };
+                }
+                cumulativeXP += xpNeeded;
+            }
+        }
+        return { stage: LEVELS[11].stage, sub: LEVELS[11].sub[4], level: 60, current: 0, needed: 0, desc: LEVELS[11].desc, stageIndex: 11, subIndex: 4 };
+    }
+
+    function addXP(amount) {
+        const today = getToday();
+        appData.lastLoginDate = today;
+        if (!appData.xpHistory) appData.xpHistory = {};
+        if (!appData.xpHistory[today]) appData.xpHistory[today] = 0;
+        appData.xpHistory[today] += amount;
+        const oldInfo = getLevelInfo(appData.totalXP || 0);
+        appData.totalXP = (appData.totalXP || 0) + amount;
+        saveData();
+        const newInfo = getLevelInfo(appData.totalXP);
+        if (newInfo.level > oldInfo.level) {
+            if (newInfo.subIndex === 0) { showStageUpModal(newInfo); } else { showLevelToast(newInfo); }
+        }
+        updateHeader();
+        renderProgress();
+    }
+
+    function showLevelToast(info) {
+        const toast = document.getElementById('levelToast');
+        if (!toast) return;
+        document.getElementById('levelToastIcon').textContent = '🎉';
+        document.getElementById('levelToastTitle').textContent = 'Новый уровень!';
+        document.getElementById('levelToastText').textContent = info.stage + ' — Уровень ' + info.level + ': ' + info.sub;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    function showStageUpModal(info) {
+        const overlay = document.getElementById('levelUpOverlay');
+        if (!overlay) return;
+        document.getElementById('levelUpIcon').textContent = info.stage.split(' ')[0];
+        document.getElementById('levelUpTitle').textContent = 'Новый этап!';
+        document.getElementById('levelUpStage').textContent = info.stage;
+        document.getElementById('levelUpDesc').textContent = info.desc;
+        overlay.style.display = 'flex';
+    }
+
+    document.getElementById('levelUpCloseBtn').addEventListener('click', () => { document.getElementById('levelUpOverlay').style.display = 'none'; });
+
+    function getAchievementLevel(key) { return (appData.achievements && appData.achievements[key]) || 0; }
+
+    function getAchievementData(key) {
+        const ach = ACHIEVEMENTS[key];
+        if (!ach) return null;
+        const currentLevel = getAchievementLevel(key);
+        const totalLevels = ach.levels.length;
+        const nextThreshold = currentLevel < totalLevels ? ach.levels[currentLevel] : null;
+        const metricValue = ach.metric();
+        return { ...ach, currentLevel, totalLevels, nextThreshold, metricValue };
+    }
+
+    function checkAchievements() {
+        const newUnlocks = [];
+        for (const key in ACHIEVEMENTS) {
+            const data = getAchievementData(key);
+            if (!data || !data.nextThreshold) continue;
+            if (data.metricValue >= data.nextThreshold) {
+                const newLevel = data.currentLevel + 1;
+                appData.achievements[key] = newLevel;
+                addXP(data.xpPerLevel);
+                newUnlocks.push({ name: data.name, icon: data.icon, level: newLevel, xp: data.xpPerLevel });
+            }
+        }
+        saveData();
+        newUnlocks.forEach(u => {
+            const el = document.getElementById('achievementToast');
+            if (!el) return;
+            el.innerHTML = '<div class="text-3xl">' + u.icon + '</div><div class="font-bold text-sm">' + u.name + ' — Уровень ' + u.level + '!</div><div class="text-xs text-muted">+' + u.xp + ' XP</div>';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 4000);
+        });
+        if (newUnlocks.length > 0) { renderProgress(); updateHeader(); }
+    }
+
+    function calculateStreak() {
+        let streak = 0;
+        const today = new Date(getToday()); today.setHours(0,0,0,0);
+        for (let i = 0; i < 365; i++) {
+            const date = new Date(today); date.setDate(date.getDate() - i);
+            const monthKey = date.toISOString().slice(0,7);
+            const dayIndex = date.getDate() - 1;
+            const hasActivity = appData.habits.some(h => { const md = h.monthlyDays && h.monthlyDays[monthKey]; return md && md[dayIndex]; });
+            if (hasActivity) streak++; else if (i > 0) break;
+        }
+        return streak;
+    }
+
+    function countPerfectDays() {
+        let count = 0;
+        for (const monthKey in appData.habits[0]?.monthlyDays || {}) {
+            for (let day = 0; day < 31; day++) {
+                const total = appData.habits.length;
+                if (total === 0) continue;
+                const done = appData.habits.filter(h => h.monthlyDays && h.monthlyDays[monthKey] && h.monthlyDays[monthKey][day]).length;
+                if (done === total) count++;
+            }
+        }
+        return count;
+    }
+
+    function countPerfectWeeks() {
+        let count = 0;
+        for (const monthKey in appData.habits[0]?.monthlyDays || {}) {
+            for (let week = 0; week < 5; week++) {
+                const start = week * 7; const end = Math.min(start + 7, 31);
+                let allDone = true; let hasAny = false;
+                for (let day = start; day < end; day++) {
+                    const total = appData.habits.length;
+                    if (total === 0) continue;
+                    const done = appData.habits.filter(h => h.monthlyDays && h.monthlyDays[monthKey] && h.monthlyDays[monthKey][day]).length;
+                    if (done > 0) hasAny = true;
+                    if (done < total) { allDone = false; break; }
+                }
+                if (allDone && hasAny) count++;
+            }
+        }
+        return count;
+    }
+
+    function countGoalsDone() {
+        let count = 0;
+        for (const s in appData.annualGoals) { appData.annualGoals[s].forEach(g => { if (g.done) count++; }); }
+        return count;
+    }
+
+    function countBudgetFilled() {
+        let count = 0;
+        for (const k in appData.budget) { if (appData.budget[k].some(i => i.amount > 0)) count++; }
+        return count;
+    }
+
+    function applyDeviceMode() {
+        const body = document.body;
+        body.classList.remove('force-desktop', 'force-mobile');
+        
+        if (deviceMode === 'mobile') {
+            body.classList.add('force-mobile');
+        } else if (deviceMode === 'desktop') {
+            body.classList.add('force-desktop');
+        }
+        
+        updateDeviceButtons();
+        updateMobileSubtabs();
+        updateFAB();
+        renderAll();
+    }
+
+    function updateDeviceButtons() {
+        const mobileBtn = document.getElementById('settingsMobileBtn');
+        const desktopBtn = document.getElementById('settingsDesktopBtn');
+        const welcomeMobileBtn = document.getElementById('deviceMobileBtn');
+        const welcomeDesktopBtn = document.getElementById('deviceDesktopBtn');
+        
+        if (mobileBtn) {
+            mobileBtn.className = deviceMode === 'mobile' ? 'btn btn-primary text-xs flex-1' : 'btn btn-outline text-xs flex-1';
+        }
+        if (desktopBtn) {
+            desktopBtn.className = deviceMode === 'desktop' ? 'btn btn-primary text-xs flex-1' : 'btn btn-outline text-xs flex-1';
+        }
+        if (welcomeMobileBtn) {
+            welcomeMobileBtn.className = deviceMode === 'mobile' ? 'btn btn-primary text-sm flex-1 justify-center' : 'btn btn-outline text-sm flex-1 justify-center';
+        }
+        if (welcomeDesktopBtn) {
+            welcomeDesktopBtn.className = deviceMode === 'desktop' ? 'btn btn-primary text-sm flex-1 justify-center' : 'btn btn-outline text-sm flex-1 justify-center';
+        }
+    }
+
+    function setDeviceMode(mode) {
+        deviceMode = mode;
+        localStorage.setItem(DEVICE_KEY, mode);
+        applyDeviceMode();
+    }
+
+    document.getElementById('deviceMobileBtn').addEventListener('click', () => setDeviceMode('mobile'));
+    document.getElementById('deviceDesktopBtn').addEventListener('click', () => setDeviceMode('desktop'));
+    document.getElementById('settingsMobileBtn').addEventListener('click', () => setDeviceMode('mobile'));
+    document.getElementById('settingsDesktopBtn').addEventListener('click', () => setDeviceMode('desktop'));
+
+    function applyTheme() {
+        document.body.setAttribute('data-mode', settings.dark ? 'dark' : 'light');
+        document.body.setAttribute('data-theme', settings.theme);
+        document.getElementById('darkModeBtn').textContent = settings.dark ? '☀️' : '🌙';
+        renderThemeSelector();
+        applyNicknameColor();
+        applyAvatarBorder();
+    }
+
+    function renderThemeSelector() {
+        const container = document.getElementById('themeSelector');
+        if (!container) return;
+        container.innerHTML = '';
+        const info = getLevelInfo(appData.totalXP || 0);
+        THEMES.forEach(theme => {
+            const btn = document.createElement('button');
+            const isLocked = info.level < theme.unlockLevel;
+            btn.className = 'theme-btn' + (settings.theme === theme.id ? ' active' : '') + (isLocked ? ' locked' : '');
+            btn.style.background = theme.color;
+            btn.title = isLocked ? theme.name + ' — откроется на уровне ' + theme.unlockLevel : theme.name;
+            btn.dataset.theme = theme.id;
+            btn.addEventListener('click', () => {
+                if (isLocked) { showToast('🔒 Тема «' + theme.name + '» откроется на уровне ' + theme.unlockLevel); return; }
+                settings.theme = theme.id;
+                saveSettings();
+                applyTheme();
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    document.getElementById('darkModeBtn').addEventListener('click', () => {
+        settings.dark = !settings.dark;
+        saveSettings();
+        applyTheme();
+    });
+
+    const settingsPanel = document.getElementById('settingsPanel');
+    document.getElementById('settingsToggleBtn').addEventListener('click', () => { settingsPanel.classList.toggle('open'); });
+    document.getElementById('settingsCloseBtn').addEventListener('click', () => { settingsPanel.classList.remove('open'); });
+    function startOnboarding() {
+        if (localStorage.getItem(ONBOARDING_KEY)) return;
+        if (appData.nickname) {
+            document.getElementById('onboardingOverlay').style.display = 'block';
+            showOnboardingStep(0);
+        } else {
+            document.getElementById('welcomeOverlay').style.display = 'flex';
+        }
+    }
+
+    const onboardingSteps = [
+        { element: null, title: '👋 Добро пожаловать!', text: 'Это «Всё под рукой» — твой личный органайзер. Нажимай «Далее».' },
+        { element: '#annualSection', title: '🌍 Цели на год', text: 'Ставь цели по 5 сферам жизни. Можно добавить несколько целей в каждой сфере и разбивать их на подцели.', mobileElement: '#mobileHabitGoals', mobileText: 'Ставь цели по 5 сферам жизни.' },
+        { element: '#habitSection', title: '📋 Трекер привычек', text: 'Создавай привычки и выбирай дни недели кнопками Пн-Вс. Отмечать можно только выбранные дни.', mobileElement: '#mobileHabitTracker', mobileText: 'Создавай привычки и отмечай в календаре.' },
+        { element: '#addHabitRowBtn', title: '➕ Добавление привычки', text: 'Нажми сюда, чтобы добавить новую привычку.', mobileElement: null, mobileText: 'Нажми на "+" внизу, чтобы добавить привычку.' },
+        { element: '.tab-btn[data-tab="tab2"]', title: '📝 Задачи', text: 'Переключаю на вкладку «Задачи». Управляй делами и дедлайнами.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab2"]', mobileText: 'Здесь твои задачи. Нажми на задачу, чтобы раскрыть.' },
+        { element: '.tab-btn[data-tab="tab3"]', title: '📊 Финансы', text: 'Переключаю на «Финансы» — бюджет, доходы, расходы.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab3"]', mobileText: 'Бюджет, транзакции и обзор.' },
+        { element: '.tab-btn[data-tab="tab5"]', title: '🏆 Прогресс', text: 'Получай XP и повышай уровень! Открывай до 60 уровней, достижения, темы и обводки.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab5"]', mobileText: 'Уровень, достижения, статистика.' },
+        { element: '#tgButton', title: '📱 Telegram', text: 'Подпишись на ТГ-канал «Пиксель и строчка», чтобы получать обновления!' }
+    ];
+
+    function showOnboardingStep(index) {
+        if (deviceMode === 'mobile') {
+            showOnboardingStepMobile(index);
+        } else {
+            showOnboardingStepDesktop(index);
+        }
+    }
+
+    function showOnboardingStepDesktop(index) {
+        if (index >= onboardingSteps.length) {
+            localStorage.setItem(ONBOARDING_KEY, 'done');
+            document.getElementById('onboardingOverlay').style.display = 'none';
+            return;
+        }
+        currentOnboardingStep = index;
+        const step = onboardingSteps[index];
+        document.getElementById('onboardingTitle').textContent = step.title;
+        document.getElementById('onboardingText').textContent = step.text;
+
+        const dots = document.getElementById('stepDots');
+        dots.innerHTML = '';
+        onboardingSteps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'w-2 h-2 rounded-full';
+            dot.style.background = i === index ? 'var(--primary-dark)' : 'var(--border)';
+            dot.style.transition = 'all 0.3s';
+            if (i === index) dot.style.width = '24px';
+            dots.appendChild(dot);
+        });
+
+        const highlight = document.getElementById('onboardingHighlight');
+        const tooltip = document.getElementById('onboardingTooltip');
+        
+        tooltip.className = 'onboarding-tooltip';
+        tooltip.style.display = 'flex';
+        tooltip.style.position = 'fixed';
+        tooltip.style.left = 'auto';
+        tooltip.style.right = 'auto';
+        tooltip.style.top = 'auto';
+        tooltip.style.bottom = 'auto';
+        tooltip.style.transform = 'none';
+        tooltip.style.width = '360px';
+        tooltip.style.maxWidth = '360px';
+        tooltip.style.padding = '20px';
+        tooltip.style.maxHeight = '85vh';
+        
+        document.getElementById('onboardingTitle').style.fontSize = '18px';
+        document.getElementById('onboardingText').style.fontSize = '14px';
+
+        if (step.element && step.element.startsWith('.tab-btn')) {
+            const tabBtn = document.querySelector(step.element);
+            if (tabBtn) tabBtn.click();
+        }
+
+        if (!step.element) {
+            highlight.style.display = 'none';
+            tooltip.style.left = '50%';
+            tooltip.style.top = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+        } else {
+            const target = document.querySelector(step.element);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    highlight.style.display = 'block';
+                    const rect = target.getBoundingClientRect();
+                    const tooltipWidth = 360;
+                    const tooltipHeight = 200;
+                    const offset = 12;
+                    highlight.style.left = (rect.left - 5) + 'px';
+                    if (step.element === '.tab-btn[data-tab="tab5"]' || step.element === '#tgButton') {
+                        highlight.style.top = (rect.top - 2) + 'px';
+                    } else {
+                        highlight.style.top = (rect.top - 5) + 'px';
+                    }
+                    highlight.style.width = (rect.width + 10) + 'px';
+                    highlight.style.height = (rect.height + 10) + 'px';
+                    let left = rect.left;
+                    let top = rect.bottom + offset;
+                    if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
+                    if (left < 20) left = 20;
+                    if (top + tooltipHeight > window.innerHeight - 20) top = rect.top - tooltipHeight - offset;
+                    if (top < 20) top = 20;
+                    tooltip.style.left = left + 'px';
+                    tooltip.style.top = top + 'px';
+                    tooltip.style.transform = 'none';
+                }, 300);
+            } else {
+                highlight.style.display = 'none';
+                tooltip.style.left = '50%';
+                tooltip.style.top = '50%';
+                tooltip.style.transform = 'translate(-50%, -50%)';
+            }
+        }
+    }
+
+    function showOnboardingStepMobile(index) {
+        if (index >= onboardingSteps.length) {
+            localStorage.setItem(ONBOARDING_KEY, 'done');
+            document.getElementById('onboardingOverlay').style.display = 'none';
+            return;
+        }
+        currentOnboardingStep = index;
+        const step = onboardingSteps[index];
+        document.getElementById('onboardingTitle').textContent = step.title;
+        document.getElementById('onboardingText').textContent = step.mobileText || step.text;
+
+        const dots = document.getElementById('stepDots');
+        dots.innerHTML = '';
+        onboardingSteps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'w-2 h-2 rounded-full';
+            dot.style.background = i === index ? 'var(--primary-dark)' : 'var(--border)';
+            dot.style.transition = 'all 0.3s';
+            if (i === index) dot.style.width = '24px';
+            dots.appendChild(dot);
+        });
+
+        const highlight = document.getElementById('onboardingHighlight');
+        const tooltip = document.getElementById('onboardingTooltip');
+        
+        let elementSelector = step.mobileElement || step.element;
+        
+        tooltip.className = 'onboarding-tooltip';
+        tooltip.style.display = 'flex';
+        tooltip.style.position = 'fixed';
+        tooltip.style.bottom = '76px';
+        tooltip.style.left = '50%';
+        tooltip.style.right = 'auto';
+        tooltip.style.top = 'auto';
+        tooltip.style.width = '280px';
+        tooltip.style.maxWidth = '280px';
+        tooltip.style.padding = '8px';
+        tooltip.style.transform = 'translateX(-50%)';
+        tooltip.style.maxHeight = '40vh';
+        
+        document.getElementById('onboardingTitle').style.fontSize = '13px';
+        document.getElementById('onboardingText').style.fontSize = '11px';
+
+        if (elementSelector && elementSelector.startsWith('.tab-btn')) {
+            const tabBtn = document.querySelector(elementSelector);
+            if (tabBtn) tabBtn.click();
+        }
+        if (elementSelector && elementSelector.startsWith('.mobile-nav-btn')) {
+            const navBtn = document.querySelector(elementSelector);
+            if (navBtn) navBtn.click();
+        }
+        if (elementSelector && elementSelector.startsWith('#mobileHabit')) {
+            const subtabMap = {
+                '#mobileHabitGoals': 'habits-goals',
+                '#mobileHabitTracker': 'habits-tracker',
+                '#mobileHabitMonthly': 'habits-monthly',
+                '#mobileHabitNotes': 'habits-notes',
+                '#mobileHabitAnalytics': 'habits-analytics'
+            };
+            const subtabId = subtabMap[elementSelector];
+            if (subtabId) showMobileSubtab(subtabId);
+        }
+
+        if (!elementSelector) {
+            highlight.style.display = 'none';
+            tooltip.style.bottom = '50%';
+            tooltip.style.transform = 'translate(-50%, 50%)';
+        } else {
+            const target = document.querySelector(elementSelector);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    highlight.style.display = 'block';
+                    const rect = target.getBoundingClientRect();
+                    highlight.style.left = (rect.left - 3) + 'px';
+                    highlight.style.top = (rect.top - 3) + 'px';
+                    highlight.style.width = (rect.width + 6) + 'px';
+                    highlight.style.height = (rect.height + 6) + 'px';
+                    highlight.style.zIndex = '2001';
+                }, 400);
+            } else {
+                highlight.style.display = 'none';
+            }
+        }
+    }
+
+    document.getElementById('onboardingNext').addEventListener('click', () => { showOnboardingStep(currentOnboardingStep + 1); });
+    document.getElementById('onboardingSkip').addEventListener('click', () => {
+        localStorage.setItem(ONBOARDING_KEY, 'done');
+        document.getElementById('onboardingOverlay').style.display = 'none';
+    });
+    document.getElementById('restartOnboardingBtn').addEventListener('click', () => {
+        localStorage.removeItem(ONBOARDING_KEY);
+        const tab1 = document.querySelector('.tab-btn[data-tab="tab1"]');
+        if (tab1) tab1.click();
+        setTimeout(() => {
+            document.getElementById('onboardingOverlay').style.display = 'block';
+            showOnboardingStep(0);
+        }, 100);
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+        const nickname = document.getElementById('nicknameInput').value.trim() || 'Пользователь';
+        appData.nickname = nickname;
+        saveData();
+        document.getElementById('welcomeOverlay').style.display = 'none';
+        document.getElementById('onboardingOverlay').style.display = 'block';
+        showOnboardingStep(0);
+        updateHeader();
+        if (isFirstLaunch) {
+            localStorage.setItem(FIRST_LAUNCH_KEY, 'done');
+            isFirstLaunch = false;
+            renderAll();
+        }
+    });
+
+    document.querySelectorAll('#petSelector .pet-avatar').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#petSelector .pet-avatar').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            appData.pet = btn.dataset.pet;
+        });
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.tab);
+        });
+    });
+
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchTab(btn.dataset.mobileTab);
+        });
+    });
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const desktopBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+        if (desktopBtn) desktopBtn.classList.add('active');
+        
+        document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+        const mobileBtn = document.querySelector('.mobile-nav-btn[data-mobile-tab="' + tabId + '"]');
+        if (mobileBtn) mobileBtn.classList.add('active');
+        
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        updateFAB();
+        updateMobileSubtabs();
+        
+        setTimeout(renderAllCharts, 100);
+    }
+
+    function updateMobileSubtabs() {
+        if (deviceMode !== 'mobile') {
+            const habitSubtabs = document.getElementById('mobileHabitSubtabs');
+            const financeSubtabs = document.getElementById('mobileFinanceSubtabs');
+            const progressSubtabs = document.getElementById('mobileProgressSubtabs');
+            if (habitSubtabs) habitSubtabs.style.display = 'none';
+            if (financeSubtabs) financeSubtabs.style.display = 'none';
+            if (progressSubtabs) progressSubtabs.style.display = 'none';
+            return;
+        }
+        
+        const activeTab = document.querySelector('.tab-panel:not(.hidden)');
+        if (!activeTab) return;
+        
+        const tabId = activeTab.id;
+        
+        const habitSubtabs = document.getElementById('mobileHabitSubtabs');
+        const financeSubtabs = document.getElementById('mobileFinanceSubtabs');
+        const progressSubtabs = document.getElementById('mobileProgressSubtabs');
+        
+        if (habitSubtabs) habitSubtabs.style.display = tabId === 'tab1' ? 'flex' : 'none';
+        if (financeSubtabs) financeSubtabs.style.display = tabId === 'tab3' ? 'flex' : 'none';
+        if (progressSubtabs) progressSubtabs.style.display = tabId === 'tab5' ? 'flex' : 'none';
+        
+        if (tabId === 'tab1') {
+            showMobileSubtab('habits-goals');
+        } else if (tabId === 'tab3') {
+            showMobileSubtab('finance-budget');
+        } else if (tabId === 'tab5') {
+            showMobileSubtab('progress-level');
+        }
+    }
+
+    function showMobileSubtab(subtabId) {
+        const tabMap = {
+            'habits-goals': { sections: '.mobile-habits-view', target: '#mobileHabitGoals', subtabs: '#mobileHabitSubtabs' },
+            'habits-tracker': { sections: '.mobile-habits-view', target: '#mobileHabitTracker', subtabs: '#mobileHabitSubtabs' },
+            'habits-monthly': { sections: '.mobile-habits-view', target: '#mobileHabitMonthly', subtabs: '#mobileHabitSubtabs' },
+            'habits-notes': { sections: '.mobile-habits-view', target: '#mobileHabitNotes', subtabs: '#mobileHabitSubtabs' },
+            'habits-analytics': { sections: '.mobile-habits-view', target: '#mobileHabitAnalytics', subtabs: '#mobileHabitSubtabs' },
+            'finance-budget': { sections: '.mobile-finance-view', target: '#mobileFinanceBudget', subtabs: '#mobileFinanceSubtabs' },
+            'finance-transactions': { sections: '.mobile-finance-view', target: '#mobileFinanceTransactions', subtabs: '#mobileFinanceSubtabs' },
+            'finance-overview': { sections: '.mobile-finance-view', target: '#mobileFinanceOverview', subtabs: '#mobileFinanceSubtabs' },
+            'progress-level': { sections: '.mobile-progress-section', target: '#mobileProgressLevel', subtabs: '#mobileProgressSubtabs' },
+            'progress-profile': { sections: '.mobile-progress-section', target: '#mobileProgressProfile', subtabs: '#mobileProgressSubtabs' },
+            'progress-achievements': { sections: '.mobile-progress-section', target: '#mobileProgressAchievements', subtabs: '#mobileProgressSubtabs' },
+            'progress-stats': { sections: '.mobile-progress-section', target: '#mobileProgressStats', subtabs: '#mobileProgressSubtabs' }
+        };
+        
+        const map = tabMap[subtabId];
+        if (!map) return;
+        
+        document.querySelectorAll(map.sections).forEach(s => {
+            s.style.display = 'none';
+            s.classList.remove('active');
+        });
+        
+        const target = document.querySelector(map.target);
+        if (target) {
+            target.style.display = 'block';
+            target.classList.add('active');
+        }
+        
+        document.querySelectorAll(map.subtabs + ' .mobile-subtab').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mobileSubtab === subtabId);
+        });
+        
+        updateFAB();
+    }
+
+    document.querySelectorAll('.mobile-subtab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            showMobileSubtab(btn.dataset.mobileSubtab);
+        });
+    });
+
+    function updateFAB() {
+        const fab = document.getElementById('fabBtn');
+        if (!fab) return;
+        
+        if (deviceMode !== 'mobile') {
+            fab.style.display = 'none';
+            return;
+        }
+        
+        const activeTab = document.querySelector('.tab-panel:not(.hidden)');
+        if (!activeTab) return;
+        
+        const tabId = activeTab.id;
+        fab.style.display = 'flex';
+        
+        fab.onclick = null;
+        if (tabId === 'tab1') {
+            const activeSubtab = document.querySelector('#mobileHabitSubtabs .mobile-subtab.active');
+            if (activeSubtab && activeSubtab.dataset.mobileSubtab === 'habits-tracker') {
+                fab.onclick = () => document.getElementById('addHabitRowBtn').click();
+            } else {
+                fab.style.display = 'none';
+            }
+        } else if (tabId === 'tab2') {
+            fab.onclick = () => document.getElementById('addTaskRowBtn').click();
+        } else if (tabId === 'tab3') {
+            const activeSubtab = document.querySelector('#mobileFinanceSubtabs .mobile-subtab.active');
+            if (activeSubtab && activeSubtab.dataset.mobileSubtab === 'finance-transactions') {
+                fab.onclick = () => document.getElementById('addTransactionBtn').click();
+            } else {
+                fab.style.display = 'none';
+            }
+        } else {
+            fab.style.display = 'none';
+        }
+    }
+
+    function updateHeader() {
+        const headerPet = document.getElementById('headerPet');
+        const headerNickname = document.getElementById('headerNickname');
+        if (headerPet && appData.pet && PETS[appData.pet]) headerPet.textContent = PETS[appData.pet].icon;
+        if (headerNickname) headerNickname.textContent = appData.nickname || 'Всё под рукой';
+        updateHeaderLevel();
+        applyNicknameColor();
+        applyAvatarBorder();
+    }
+
+    function updateHeaderLevel() {
+        const info = getLevelInfo(appData.totalXP || 0);
+        const headerLevel = document.getElementById('headerLevel');
+        if (headerLevel) headerLevel.textContent = info.stage + ' · Уровень ' + info.level + ': ' + info.sub;
+    }
+
+    function renderProfile() {
+        const profilePet = document.getElementById('profilePet');
+        const profileNickname = document.getElementById('profileNickname');
+        if (profilePet && appData.pet && PETS[appData.pet]) profilePet.textContent = PETS[appData.pet].icon;
+        if (profileNickname) profileNickname.value = appData.nickname || '';
+        
+        const profilePetDesktop = document.getElementById('profilePetDesktop');
+        const profileNicknameDesktop = document.getElementById('profileNicknameDesktop');
+        if (profilePetDesktop && appData.pet && PETS[appData.pet]) profilePetDesktop.textContent = PETS[appData.pet].icon;
+        if (profileNicknameDesktop) profileNicknameDesktop.value = appData.nickname || '';
+        
+        renderBorderSelector();
+        renderNicknameColors();
+    }
+
+    function renderBorderSelector() {
+        const container = document.getElementById('borderSelector');
+        const containerDesktop = document.getElementById('borderSelectorDesktop');
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            const info = getLevelInfo(appData.totalXP || 0);
+            BORDERS.forEach(border => {
+                const div = document.createElement('div');
+                const isLocked = info.level < border.unlockLevel;
+                div.className = 'avatar-svg' + (appData.avatarBorder === border.id ? ' selected' : '') + (isLocked ? ' locked' : '');
+                div.textContent = PETS[appData.pet].icon;
+                div.title = isLocked ? border.name + ' — откроется на уровне ' + border.unlockLevel : border.name;
+                if (border.class) div.classList.add(...border.class.split(' '));
+                div.addEventListener('click', () => {
+                    if (isLocked) { showToast('🔒 Обводка «' + border.name + '» откроется на уровне ' + border.unlockLevel); return; }
+                    appData.avatarBorder = border.id;
+                    saveData();
+                    renderProfile();
+                    applyAvatarBorder();
+                    updateHeader();
+                });
+                cont.appendChild(div);
+            });
+        });
+    }
+
+    function renderNicknameColors() {
+        const container = document.getElementById('nicknameColorSelector');
+        const containerDesktop = document.getElementById('nicknameColorSelectorDesktop');
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            const info = getLevelInfo(appData.totalXP || 0);
+            NICKNAME_COLORS.forEach(nc => {
+                const btn = document.createElement('button');
+                const isLocked = info.level < nc.unlockLevel;
+                btn.style.background = nc.color;
+                btn.style.width = '32px';
+                btn.style.height = '32px';
+                btn.style.borderRadius = '50%';
+                btn.style.cursor = isLocked ? 'not-allowed' : 'pointer';
+                btn.style.opacity = isLocked ? '0.3' : '1';
+                btn.style.border = appData.nicknameColor === nc.color ? '3px solid var(--text)' : '2px solid var(--border)';
+                btn.title = isLocked ? nc.name + ' — откроется на уровне ' + nc.unlockLevel : nc.name;
+                btn.addEventListener('click', () => {
+                    if (isLocked) { showToast('🔒 Цвет «' + nc.name + '» откроется на уровне ' + nc.unlockLevel); return; }
+                    appData.nicknameColor = nc.color;
+                    saveData();
+                    renderProfile();
+                    applyNicknameColor();
+                    updateHeader();
+                });
+                cont.appendChild(btn);
+            });
+        });
+    }
+
+    function applyNicknameColor() {
+        const headerNickname = document.getElementById('headerNickname');
+        const profileNickname = document.getElementById('profileNickname');
+        const profileNicknameDesktop = document.getElementById('profileNicknameDesktop');
+        const info = getLevelInfo(appData.totalXP || 0);
+        if (headerNickname) {
+            headerNickname.style.color = appData.nicknameColor || '#1e293b';
+            headerNickname.style.textShadow = 'none';
+            if (info.level >= 51) { headerNickname.style.animation = 'nicknameGlow 3s infinite'; }
+            else if (info.level >= 21) { headerNickname.style.textShadow = '0 0 12px ' + appData.nicknameColor; }
+            else { headerNickname.style.animation = 'none'; }
+        }
+        if (profileNickname) profileNickname.style.color = appData.nicknameColor || '#1e293b';
+        if (profileNicknameDesktop) profileNicknameDesktop.style.color = appData.nicknameColor || '#1e293b';
+    }
+
+    function applyAvatarBorder() {
+        const headerPet = document.getElementById('headerPet');
+        const profilePet = document.getElementById('profilePet');
+        const profilePetDesktop = document.getElementById('profilePetDesktop');
+        const border = BORDERS.find(b => b.id === (appData.avatarBorder || 'border-default'));
+        const borderClass = border ? border.class : '';
+        [headerPet, profilePet, profilePetDesktop].forEach(el => {
+            if (!el) return;
+            el.className = 'pet-avatar';
+            if (borderClass) el.classList.add(...borderClass.split(' '));
+        });
+    }
+
+    document.getElementById('profileNickname').addEventListener('input', (e) => {
+        appData.nickname = e.target.value;
+        saveData();
+        updateHeader();
+    });
+    
+    document.getElementById('profileNicknameDesktop').addEventListener('input', (e) => {
+        appData.nickname = e.target.value;
+        saveData();
+        updateHeader();
+    });
+
+    document.getElementById('headerPet').addEventListener('click', () => {
+        switchTab('tab5');
+        showToast('Настройки профиля открыты');
+    });
+
+    window.switchPet = function() {
+        const pets = Object.keys(PETS);
+        const currentIndex = pets.indexOf(appData.pet);
+        const nextIndex = (currentIndex + 1) % pets.length;
+        appData.pet = pets[nextIndex];
+        saveData();
+        renderProfile();
+        updateHeader();
+        showToast('Аватарка: ' + PETS[appData.pet].name);
+    };
+
+    function showToast(text) {
+        const el = document.getElementById('toast');
+        el.textContent = text;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function renderAll() {
+        renderGoals();
+        renderHabitMatrix();
+        renderMobileHabits();
+        renderMonthly();
+        renderTasks();
+        renderMobileTasks();
+        renderBudget();
+        renderMobileBudget();
+        renderTransactions();
+        renderTransactionsMobile();
+        renderProgress();
+        renderProfile();
+        renderStats();
+        renderDocs('main');
+        updateHeader();
+        renderAllCharts();
+        updateFAB();
+        updateMobileSubtabs();
+    }
+    window.addSubgoal = function(sphere) {
+        appData.annualGoals[sphere].push({ id: uid(), text: '', done: false, subgoals: [] });
+        saveData();
+        renderGoals();
+    };
+
+    function renderGoals() {
+        const examples = {
+            finance: ['Накопить 500 000 ₽', 'Закрыть кредит'],
+            spirituality: ['Прочитать 20 книг', 'Выучить английский'],
+            career: ['Получить повышение', 'Запустить проект'],
+            health: ['Сбросить 5 кг', 'Тренироваться 3 раза в неделю'],
+            relationships: ['Проводить время с семьёй', 'Найти новых друзей']
+        };
+        
+        const sphereNames = {
+            finance: '💰 Финансы',
+            spirituality: '📚 Саморазвитие',
+            career: '💼 Карьера',
+            health: '🌿 Здоровье',
+            relationships: '❤️ Отношения'
+        };
+        
+        for (const sphere of Object.keys(appData.annualGoals)) {
+            const container = document.getElementById('goals-' + sphere);
+            if (container) {
+                container.innerHTML = '';
+                renderGoalsForSphere(sphere, container, examples);
+            }
+        }
+        
+        const mobileContainer = document.getElementById('mobileAnnualGoals');
+        if (mobileContainer) {
+            mobileContainer.innerHTML = '';
+            for (const sphere of Object.keys(appData.annualGoals)) {
+                const sphereDiv = document.createElement('div');
+                sphereDiv.className = 'p-3 rounded-xl border';
+                sphereDiv.style.borderColor = 'var(--border)';
+                
+                const sphereName = document.createElement('span');
+                sphereName.className = 'text-xs font-semibold';
+                sphereName.textContent = sphereNames[sphere];
+                sphereDiv.appendChild(sphereName);
+                
+                const goalsDiv = document.createElement('div');
+                goalsDiv.className = 'mt-1';
+                sphereDiv.appendChild(goalsDiv);
+                
+                const addBtn = document.createElement('button');
+                addBtn.textContent = '+ Цель';
+                addBtn.className = 'text-xs mt-1 btn btn-outline py-1 px-2';
+                addBtn.addEventListener('click', () => addSubgoal(sphere));
+                sphereDiv.appendChild(addBtn);
+                
+                mobileContainer.appendChild(sphereDiv);
+                
+                renderGoalsForSphere(sphere, goalsDiv, examples);
+            }
+        }
+    }
+
+    function renderGoalsForSphere(sphere, container, examples) {
+        if (isFirstLaunch && appData.annualGoals[sphere].length === 0) {
+            examples[sphere].forEach(text => { appData.annualGoals[sphere].push({ id: uid(), text: text, done: false, subgoals: [] }); });
+            saveData();
+        }
+        appData.annualGoals[sphere].forEach(goal => {
+            if (!goal.subgoals) goal.subgoals = [];
+            const row = document.createElement('div');
+            row.className = 'subgoal-item';
+            const check = document.createElement('span');
+            check.className = 'goal-check' + (goal.done ? ' completed' : '');
+            check.textContent = '✓';
+            check.addEventListener('click', () => {
+                const wasDone = goal.done;
+                goal.done = !goal.done;
+                saveData();
+                renderGoals();
+                if (goal.done && !wasDone && !goal.xpAwarded) {
+                    let goalsWithXP = 0;
+                    for (const s in appData.annualGoals) { appData.annualGoals[s].forEach(g => { if (g.xpAwarded) goalsWithXP++; }); }
+                    if (goalsWithXP < 15) {
+                        goal.xpAwarded = true;
+                        addXP(15);
+                    }
+                }
+                checkAchievements();
+            });
+            row.appendChild(check);
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = goal.text;
+            input.placeholder = 'Цель...';
+            input.className = 'inline-input text-xs';
+            if (goal.done) input.style.textDecoration = 'line-through';
+            input.addEventListener('input', (e) => { goal.text = e.target.value; saveData(); });
+            row.appendChild(input);
+            const del = document.createElement('button');
+            del.textContent = '✕';
+            del.className = 'text-xs';
+            del.style.color = 'var(--muted)';
+            del.style.cursor = 'pointer';
+            del.style.background = 'none';
+            del.style.border = 'none';
+            del.addEventListener('click', () => {
+                appData.annualGoals[sphere] = appData.annualGoals[sphere].filter(g => g.id !== goal.id);
+                saveData();
+                renderGoals();
+            });
+            row.appendChild(del);
+            container.appendChild(row);
+            
+            goal.subgoals.forEach(sub => {
+                const subRow = document.createElement('div');
+                subRow.className = 'subtask-item';
+                subRow.style.marginLeft = '24px';
+                const subCheck = document.createElement('input');
+                subCheck.type = 'checkbox';
+                subCheck.className = 'habit-checkbox';
+                subCheck.checked = sub.done;
+                subCheck.style.width = '16px';
+                subCheck.style.height = '16px';
+                subCheck.addEventListener('change', (e) => { sub.done = e.target.checked; saveData(); });
+                subRow.appendChild(subCheck);
+                const subInput = document.createElement('input');
+                subInput.type = 'text';
+                subInput.value = sub.text;
+                subInput.placeholder = 'Подцель...';
+                subInput.className = 'inline-input text-xs';
+                subInput.addEventListener('input', (e) => { sub.text = e.target.value; saveData(); });
+                subRow.appendChild(subInput);
+                const subDel = document.createElement('button');
+                subDel.textContent = '✕';
+                subDel.className = 'text-xs';
+                subDel.style.color = 'var(--muted)';
+                subDel.style.cursor = 'pointer';
+                subDel.style.background = 'none';
+                subDel.style.border = 'none';
+                subDel.addEventListener('click', () => {
+                    goal.subgoals = goal.subgoals.filter(s => s.id !== sub.id);
+                    saveData();
+                    renderGoals();
+                });
+                subRow.appendChild(subDel);
+                container.appendChild(subRow);
+            });
+            const addSubBtn = document.createElement('button');
+            addSubBtn.textContent = '+ Подцель';
+            addSubBtn.className = 'text-xs';
+            addSubBtn.style.color = 'var(--secondary-dark)';
+            addSubBtn.style.marginLeft = '24px';
+            addSubBtn.style.cursor = 'pointer';
+            addSubBtn.style.background = 'none';
+            addSubBtn.style.border = 'none';
+            addSubBtn.addEventListener('click', () => {
+                goal.subgoals.push({ id: uid(), text: '', done: false });
+                saveData();
+                renderGoals();
+            });
+            container.appendChild(addSubBtn);
+        });
+    }
+
+    const HABIT_COLORS = ['#FCA5A5', '#93C5FD', '#6EE7B7', '#FCD34D', '#C4B5FD', '#FDBA74', '#F9A8D4', '#7DD3FC', '#a78bfa', '#34d399'];
+
+    function getHabitColor(habitId) {
+        const index = appData.habits.findIndex(h => h.id === habitId);
+        return HABIT_COLORS[index % HABIT_COLORS.length] || '#FCA5A5';
+    }
+
+    function getMonthDays(habit) {
+        if (!habit.monthlyDays) habit.monthlyDays = {};
+        if (!habit.monthlyDays[currentMonth]) habit.monthlyDays[currentMonth] = Array(31).fill(false);
+        return habit.monthlyDays[currentMonth];
+    }
+
+    function renderHabitMatrix() {
+        const tbody = document.getElementById('habitTableBody');
+        const thead = document.getElementById('habitTableHead');
+        if (!tbody || !thead) return;
+        tbody.innerHTML = '';
+        const monthInput = document.getElementById('habitMonth');
+        if (monthInput) monthInput.value = currentMonth;
+        const [year, month] = currentMonth.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const offset = (firstDay + 6) % 7;
+        
+        let headRow1 = '<tr class="text-xs text-muted"><th class="text-left p-2">Привычка</th>';
+        let headRow2 = '<tr class="text-xs text-muted"><th></th>';
+        const totalDays = daysInMonth + offset;
+        let weeksCount = Math.ceil(totalDays / 7);
+        const lastWeekDays = totalDays % 7;
+        if (lastWeekDays === 1 || lastWeekDays === 0) weeksCount--;
+        if (weeksCount < 1) weeksCount = 1;
+        
+        for (let w = 0; w < weeksCount; w++) {
+            headRow1 += '<th colspan="7" class="text-center rounded-t-lg" style="background:color-mix(in srgb,var(--secondary) 25%,transparent);">Неделя ' + (w+1) + '</th>';
+        }
+        headRow1 += '</tr>';
+        for (let i = 0; i < daysInMonth; i++) {
+            headRow2 += '<th>' + dayNames[(i + offset) % 7] + '<br><span style="font-size:9px;color:var(--muted);">' + (i+1) + '</span></th>';
+        }
+        headRow2 += '</tr>';
+        thead.innerHTML = headRow1 + headRow2;
+
+        if (appData.habits.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="' + (daysInMonth + 2) + '" class="p-4 text-center text-muted text-sm">Привычек пока нет. Нажми «+ Добавить привычку»</td>';
+            tbody.appendChild(emptyRow);
+        }
+
+        appData.habits.forEach(habit => {
+            const monthDays = getMonthDays(habit);
+            const tr = document.createElement('tr');
+            tr.className = 'border-b';
+            tr.style.borderColor = 'var(--border)';
+            const tdName = document.createElement('td');
+            tdName.className = 'p-2 min-w-[160px]';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = habit.name;
+            nameInput.className = 'inline-input text-sm font-medium';
+            nameInput.addEventListener('input', (e) => { habit.name = e.target.value; saveData(); });
+            tdName.appendChild(nameInput);
+            const daySelector = document.createElement('div');
+            daySelector.className = 'flex gap-1.5 mt-2 flex-wrap';
+            dayNames.forEach((day, idx) => {
+                const btn = document.createElement('button');
+                btn.textContent = day;
+                btn.type = 'button';
+                btn.className = 'day-selector-btn' + (habit.activeDays[idx] ? ' active' : '');
+                btn.addEventListener('click', () => {
+                    habit.activeDays[idx] = !habit.activeDays[idx];
+                    btn.classList.toggle('active', habit.activeDays[idx]);
+                    saveData();
+                    renderHabitMatrix();
+                    renderMobileHabits();
+                    renderAnalytics();
+                });
+                daySelector.appendChild(btn);
+            });
+            tdName.appendChild(daySelector);
+            tr.appendChild(tdName);
+            for (let i = 0; i < daysInMonth; i++) {
+                const td = document.createElement('td');
+                td.className = 'p-1 text-center';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'habit-checkbox';
+                const dayOfWeek = (i + offset) % 7;
+                checkbox.disabled = !habit.activeDays[dayOfWeek];
+                checkbox.checked = monthDays[i] || false;
+                checkbox.addEventListener('change', (e) => {
+                    const wasChecked = monthDays[i];
+                    monthDays[i] = e.target.checked;
+                    saveData();
+                    renderAnalytics();
+                    if (e.target.checked && !wasChecked) {
+                        handleHabitXP(habit, i);
+                    }
+                    checkAchievements();
+                });
+                td.appendChild(checkbox);
+                tr.appendChild(td);
+            }
+            const tdDel = document.createElement('td');
+            tdDel.className = 'p-1 text-center';
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '✕';
+            delBtn.className = 'text-sm';
+            delBtn.style.color = 'var(--muted)';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.background = 'none';
+            delBtn.style.border = 'none';
+            delBtn.addEventListener('click', () => {
+                appData.habits = appData.habits.filter(h => h.id !== habit.id);
+                saveData();
+                renderHabitMatrix();
+                renderMobileHabits();
+                renderAnalytics();
+            });
+            tdDel.appendChild(delBtn);
+            tr.appendChild(tdDel);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function handleHabitXP(habit, dayIndex) {
+        const today = new Date(getToday());
+        const [year, month] = currentMonth.split('-').map(Number);
+        const checkDate = new Date(year, month - 1, dayIndex + 1);
+        checkDate.setHours(0,0,0,0);
+        const todayStart = new Date(today);
+        todayStart.setHours(0,0,0,0);
+        const diffDays = Math.round((todayStart - checkDate) / 86400000);
+        
+        if (diffDays >= 0 && diffDays <= 2) {
+            const dayKey = currentMonth + '-' + dayIndex;
+            if (!habit.xpDays) habit.xpDays = {};
+            if (!habit.xpDays[dayKey]) {
+                const habitIndex = appData.habits.findIndex(h => h.id === habit.id);
+                if (habitIndex < 5) {
+                    habit.xpDays[dayKey] = true;
+                    addXP(5);
+                }
+            }
+        }
+    }
+    function renderMobileHabits() {
+        const container = document.getElementById('mobileHabitsList');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        const monthInput = document.getElementById('mobileHabitMonth');
+        if (monthInput) monthInput.value = currentMonth;
+        
+        if (appData.habits.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted text-sm py-4">Привычек пока нет. Нажмите "+" внизу</div>';
+            return;
+        }
+        
+        appData.habits.forEach(habit => {
+            const card = document.createElement('div');
+            card.className = 'mobile-habit-card';
+            
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = habit.name;
+            nameInput.className = 'inline-input text-sm font-medium mb-2';
+            nameInput.placeholder = 'Название привычки';
+            nameInput.addEventListener('input', (e) => { 
+                habit.name = e.target.value; 
+                saveData(); 
+                renderHabitMatrix();
+            });
+            card.appendChild(nameInput);
+            
+            const daysContainer = document.createElement('div');
+            daysContainer.className = 'flex gap-1.5 mb-2 flex-wrap';
+            dayNames.forEach((day, idx) => {
+                const btn = document.createElement('button');
+                btn.textContent = day;
+                btn.type = 'button';
+                btn.className = 'mobile-day-btn' + (habit.activeDays[idx] ? ' active' : '');
+                btn.addEventListener('click', () => {
+                    habit.activeDays[idx] = !habit.activeDays[idx];
+                    btn.classList.toggle('active', habit.activeDays[idx]);
+                    saveData();
+                    renderHabitMatrix();
+                    renderAnalytics();
+                });
+                daysContainer.appendChild(btn);
+            });
+            card.appendChild(daysContainer);
+            
+            const calendarContainer = document.createElement('div');
+            calendarContainer.className = 'mobile-habit-calendar mt-2';
+            
+            const calendarScroll = document.createElement('div');
+            calendarScroll.className = 'calendar-scroll';
+            
+            const calendarDays = document.createElement('div');
+            calendarDays.className = 'calendar-days';
+            
+            const [year, month] = currentMonth.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const monthDays = getMonthDays(habit);
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'habit-checkbox';
+                checkbox.style.width = '20px';
+                checkbox.style.height = '20px';
+                
+                const dayIndex = day - 1;
+                checkbox.checked = monthDays[dayIndex] || false;
+                
+                const date = new Date(year, month - 1, day);
+                const dayOfWeek = (date.getDay() + 6) % 7;
+                checkbox.disabled = !habit.activeDays[dayOfWeek];
+                
+                checkbox.addEventListener('change', (e) => {
+                    const wasChecked = monthDays[dayIndex];
+                    monthDays[dayIndex] = e.target.checked;
+                    saveData();
+                    renderAnalytics();
+                    if (e.target.checked && !wasChecked) {
+                        handleHabitXP(habit, dayIndex);
+                    }
+                    checkAchievements();
+                });
+                
+                const dayLabel = document.createElement('span');
+                dayLabel.textContent = day;
+                
+                dayElement.appendChild(checkbox);
+                dayElement.appendChild(dayLabel);
+                calendarDays.appendChild(dayElement);
+            }
+            
+            calendarScroll.appendChild(calendarDays);
+            calendarContainer.appendChild(calendarScroll);
+            card.appendChild(calendarContainer);
+            
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '✕ Удалить';
+            delBtn.className = 'text-xs mt-2';
+            delBtn.style.color = 'var(--primary-dark)';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.background = 'none';
+            delBtn.style.border = 'none';
+            delBtn.addEventListener('click', () => {
+                appData.habits = appData.habits.filter(h => h.id !== habit.id);
+                saveData();
+                renderHabitMatrix();
+                renderMobileHabits();
+                renderAnalytics();
+            });
+            card.appendChild(delBtn);
+            
+            container.appendChild(card);
+        });
+    }
+
+    document.getElementById('habitMonth').addEventListener('change', (e) => {
+        currentMonth = e.target.value;
+        saveData();
+        renderHabitMatrix();
+        renderMobileHabits();
+        renderAnalytics();
+    });
+
+    document.getElementById('mobileHabitMonth').addEventListener('change', (e) => {
+        currentMonth = e.target.value;
+        saveData();
+        renderHabitMatrix();
+        renderMobileHabits();
+        renderAnalytics();
+    });
+
+    document.getElementById('addHabitRowBtn').addEventListener('click', () => {
+        appData.habits.push({ id: uid(), name: 'Новая привычка', activeDays: [true,true,true,true,true,true,true], monthlyDays: {} });
+        saveData();
+        renderHabitMatrix();
+        renderMobileHabits();
+        checkAchievements();
+    });
+
+    function renderAnalytics() {
+        const container = document.getElementById('habitProgressList');
+        const containerDesktop = document.getElementById('habitProgressListDesktop');
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            appData.habits.forEach(habit => {
+                const monthDays = getMonthDays(habit);
+                const activeCount = habit.activeDays.filter(Boolean).length;
+                const totalPossible = activeCount * 4;
+                const done = monthDays.filter(Boolean).length;
+                const percent = totalPossible ? Math.min(Math.round((done / totalPossible) * 100), 100) : 0;
+                const color = getHabitColor(habit.id);
+                const wrap = document.createElement('div');
+                wrap.innerHTML = '<div class="flex justify-between text-sm mb-1"><span><span class="habit-color-dot" style="background:' + color + ';"></span>' + habit.name + '</span><span class="font-bold">' + percent + '%</span></div><div class="progress-bar"><div class="progress-bar-fill" style="width:' + percent + '%;background:' + color + ';"></div></div>';
+                cont.appendChild(wrap);
+            });
+            if (appData.habits.length === 0) cont.innerHTML = '<div class="text-xs text-muted">Добавь привычки, чтобы увидеть аналитику</div>';
+        });
+        
+        renderDonut();
+    }
+
+    function renderDonut() {
+        const canvas = document.getElementById('donutChart');
+        const canvasDesktop = document.getElementById('donutChartDesktop');
+        
+        [canvas, canvasDesktop].forEach(canv => {
+            if (!canv) return;
+            const labels = appData.habits.map(h => h.name);
+            const chartData = appData.habits.map(h => { const md = getMonthDays(h); return md.filter(Boolean).length; });
+            const colors = appData.habits.map(h => getHabitColor(h.id));
+            const ctx = canv.getContext('2d');
+            const chartKey = canv.id === 'donutChart' ? 'donut' : 'donutDesktop';
+            if (charts[chartKey]) charts[chartKey].destroy();
+            charts[chartKey] = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: labels.length ? labels : ['Нет привычек'], datasets: [{ data: chartData.length ? chartData : [1], backgroundColor: colors.length ? colors : ['#cbd5e1'], borderWidth: 0 }] },
+                options: { cutout: '65%', plugins: { legend: { display: true, position: 'bottom', labels: { color: 'var(--muted)', font: { size: 10 } } } } }
+            });
+        });
+    }
+
+    function renderMonthly() {
+        const container = document.getElementById('monthlyHabitsContainer');
+        const containerDesktop = document.getElementById('monthlyHabitsContainerDesktop');
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            if (appData.monthlyHabits.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'text-xs text-muted';
+                emptyMsg.textContent = 'Задач пока нет';
+                cont.appendChild(emptyMsg);
+            }
+            appData.monthlyHabits.forEach(habit => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 mb-2';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'habit-checkbox';
+                checkbox.checked = habit.done;
+                checkbox.addEventListener('change', (e) => {
+                    habit.done = e.target.checked;
+                    saveData();
+                    if (e.target.checked) addXP(10);
+                    checkAchievements();
+                });
+                row.appendChild(checkbox);
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = habit.name;
+                input.className = 'inline-input text-sm flex-1';
+                input.addEventListener('input', (e) => { habit.name = e.target.value; saveData(); });
+                row.appendChild(input);
+                const del = document.createElement('button');
+                del.textContent = '✕';
+                del.className = 'text-sm';
+                del.style.color = 'var(--muted)';
+                del.style.cursor = 'pointer';
+                del.style.background = 'none';
+                del.style.border = 'none';
+                del.addEventListener('click', () => {
+                    appData.monthlyHabits = appData.monthlyHabits.filter(h => h.id !== habit.id);
+                    saveData();
+                    renderMonthly();
+                });
+                row.appendChild(del);
+                cont.appendChild(row);
+            });
+            const addBtn = document.createElement('button');
+            addBtn.textContent = '+ Добавить';
+            addBtn.className = 'btn btn-outline text-xs mt-2';
+            addBtn.addEventListener('click', () => {
+                appData.monthlyHabits.push({ id: uid(), name: 'Ежемесячно', done: false });
+                saveData();
+                renderMonthly();
+            });
+            cont.appendChild(addBtn);
+        });
+    }
+
+    function renderStats() {
+        const container = document.getElementById('statsContainer');
+        const containerDesktop = document.getElementById('statsContainerDesktop');
+        
+        const tasksDone = appData.tasks.filter(t => t.done).length;
+        const subtasksDone = appData.tasks.reduce((count, t) => {
+            if (t.subtasks) {
+                t.subtasks.forEach(s => { if (s.done) count++; });
+            }
+            return count;
+        }, 0);
+        let habitChecks = 0;
+        appData.habits.forEach(h => {
+            if (h.monthlyDays) {
+                for (const m in h.monthlyDays) {
+                    habitChecks += h.monthlyDays[m].filter(Boolean).length;
+                }
+            }
+        });
+        const transactionsCount = appData.transactions.length;
+        const goalsDone = countGoalsDone();
+        const habitsCount = appData.habits.length;
+        const totalXP = appData.totalXP || 0;
+        
+        const stats = [
+            { icon: '✅', label: 'Выполнено задач', value: tasksDone },
+            { icon: '🧩', label: 'Выполнено подзадач', value: subtasksDone },
+            { icon: '📋', label: 'Отмечено привычек', value: habitChecks },
+            { icon: '💰', label: 'Транзакций', value: transactionsCount },
+            { icon: '🎯', label: 'Выполнено целей', value: goalsDone },
+            { icon: '📅', label: 'Создано привычек', value: habitsCount },
+            { icon: '⭐', label: 'Всего XP', value: totalXP }
+        ];
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            stats.forEach(stat => {
+                const div = document.createElement('div');
+                div.className = 'stat-card';
+                div.innerHTML = '<div class="stat-icon">' + stat.icon + '</div><div class="stat-value">' + stat.value + '</div><div class="stat-label">' + stat.label + '</div>';
+                cont.appendChild(div);
+            });
+        });
+    }
+    const notesArea = document.getElementById('notesArea');
+    if (notesArea) {
+        notesArea.value = appData.notes || '';
+        notesArea.addEventListener('input', (e) => {
+            appData.notes = e.target.value;
+            saveData();
+        });
+    }
+    
+    const notesAreaDesktop = document.getElementById('notesAreaDesktop');
+    if (notesAreaDesktop) {
+        notesAreaDesktop.value = appData.notes || '';
+        notesAreaDesktop.addEventListener('input', (e) => {
+            appData.notes = e.target.value;
+            saveData();
+        });
+    }
+
+    function renderTasks() {
+        const tbody = document.getElementById('tasksTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const searchTerm = (document.getElementById('taskSearch').value || '').toLowerCase();
+        const filteredTasks = appData.tasks.filter(t => t.name.toLowerCase().includes(searchTerm)).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+        if (filteredTasks.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="9" class="p-4 text-center text-muted text-sm">Задач пока нет. Нажми «+ Добавить задачу»</td>';
+            tbody.appendChild(emptyRow);
+        }
+        filteredTasks.forEach(task => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b';
+            tr.style.borderColor = 'var(--border)';
+            if (task.pinned) tr.style.borderLeft = '4px solid var(--primary)';
+            
+            const tdPin = document.createElement('td');
+            tdPin.className = 'p-2 text-center';
+            const pinBtn = document.createElement('button');
+            pinBtn.textContent = task.pinned ? '📌' : '📍';
+            pinBtn.style.opacity = task.pinned ? '1' : '0.3';
+            pinBtn.style.cursor = 'pointer';
+            pinBtn.style.background = 'none';
+            pinBtn.style.border = 'none';
+            pinBtn.addEventListener('click', () => { 
+                task.pinned = !task.pinned; 
+                saveData(); 
+                renderTasks(); 
+                renderMobileTasks(); 
+            });
+            tdPin.appendChild(pinBtn);
+            tr.appendChild(tdPin);
+            
+            const tdName = document.createElement('td');
+            tdName.className = 'p-2';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = task.name;
+            nameInput.className = 'inline-input text-sm';
+            if (task.done) nameInput.style.textDecoration = 'line-through';
+            nameInput.addEventListener('input', (e) => { 
+                task.name = e.target.value; 
+                saveData(); 
+                renderMobileTasks();
+            });
+            tdName.appendChild(nameInput);
+            tr.appendChild(tdName);
+            
+            const tdDate = document.createElement('td');
+            tdDate.className = 'p-2';
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.value = task.date;
+            dateInput.className = 'inline-input text-sm';
+            dateInput.addEventListener('change', (e) => { 
+                task.date = e.target.value; 
+                saveData(); 
+                renderTasks(); 
+                renderMobileTasks(); 
+            });
+            tdDate.appendChild(dateInput);
+            tr.appendChild(tdDate);
+            
+            const tdDays = document.createElement('td');
+            tdDays.className = 'p-2 text-center';
+            const days = calcDays(task.date);
+            tdDays.textContent = formatDays(days);
+            tdDays.style.color = days < 0 ? 'var(--primary-dark)' : days === 0 ? '#fbbf24' : 'var(--muted)';
+            tdDays.style.fontWeight = days <= 0 ? 'bold' : 'normal';
+            tr.appendChild(tdDays);
+            
+            const tdPriority = document.createElement('td');
+            tdPriority.className = 'p-2';
+            const prioritySelect = document.createElement('select');
+            ['Срочно','Высокий','Средний','Низкий'].forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p; opt.textContent = p;
+                if (p === task.priority) opt.selected = true;
+                prioritySelect.appendChild(opt);
+            });
+            prioritySelect.className = 'inline-input text-xs';
+            prioritySelect.style.width = 'auto';
+            prioritySelect.addEventListener('change', (e) => { 
+                task.priority = e.target.value; 
+                saveData(); 
+                renderMobileTasks();
+            });
+            tdPriority.appendChild(prioritySelect);
+            tr.appendChild(tdPriority);
+            
+            const tdStatus = document.createElement('td');
+            tdStatus.className = 'p-2 text-center';
+            const statusCheck = document.createElement('input');
+            statusCheck.type = 'checkbox';
+            statusCheck.className = 'habit-checkbox';
+            statusCheck.checked = task.done;
+            statusCheck.style.width = '18px';
+            statusCheck.style.height = '18px';
+            statusCheck.addEventListener('change', (e) => {
+                const wasDone = task.done;
+                task.done = e.target.checked;
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                updateTaskKpis();
+                if (task.done && !wasDone && !task.xpAwarded) {
+                    const todayStr = getToday();
+                    const tasksDoneToday = appData.tasks.filter(t => t.xpAwarded && t.xpDate === todayStr).length;
+                    if (tasksDoneToday < 3) {
+                        task.xpAwarded = true;
+                        task.xpDate = todayStr;
+                        addXP(10);
+                    }
+                }
+                checkAchievements();
+            });
+            tdStatus.appendChild(statusCheck);
+            tr.appendChild(tdStatus);
+            
+            const tdCat = document.createElement('td');
+            tdCat.className = 'p-2';
+            const catSelect = document.createElement('select');
+            ['Личное','Работа','Другое'].forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.textContent = c;
+                if (c === task.category) opt.selected = true;
+                catSelect.appendChild(opt);
+            });
+            catSelect.className = 'inline-input text-xs';
+            catSelect.style.width = 'auto';
+            catSelect.addEventListener('change', (e) => { 
+                task.category = e.target.value; 
+                saveData(); 
+                renderMobileTasks();
+            });
+            tdCat.appendChild(catSelect);
+            tr.appendChild(tdCat);
+            
+            const tdSub = document.createElement('td');
+            tdSub.className = 'p-2';
+            const subContainer = document.createElement('div');
+            subContainer.className = 'space-y-1';
+            if (!task.subtasks) task.subtasks = [];
+            task.subtasks.forEach(sub => {
+                const subRow = document.createElement('div');
+                subRow.className = 'subtask-item';
+                const subCheck = document.createElement('input');
+                subCheck.type = 'checkbox';
+                subCheck.className = 'habit-checkbox';
+                subCheck.checked = sub.done;
+                subCheck.style.width = '14px';
+                subCheck.style.height = '14px';
+                subCheck.addEventListener('change', (e) => {
+                    const wasDone = sub.done;
+                    sub.done = e.target.checked;
+                    saveData();
+                    renderMobileTasks();
+                    if (sub.done && !wasDone && !sub.xpAwarded) {
+                        const todayStr = getToday();
+                        const subtasksDoneToday = appData.tasks.reduce((count, t) => {
+                            if (t.subtasks) {
+                                t.subtasks.forEach(s => {
+                                    if (s.xpAwarded && s.xpDate === todayStr) count++;
+                                });
+                            }
+                            return count;
+                        }, 0);
+                        if (subtasksDoneToday < 5) {
+                            sub.xpAwarded = true;
+                            sub.xpDate = todayStr;
+                            addXP(5);
+                        }
+                    }
+                    checkAchievements();
+                });
+                subRow.appendChild(subCheck);
+                const subInput = document.createElement('input');
+                subInput.type = 'text';
+                subInput.value = sub.name;
+                subInput.className = 'inline-input text-xs';
+                if (sub.done) subInput.style.textDecoration = 'line-through';
+                subInput.addEventListener('input', (e) => { 
+                    sub.name = e.target.value; 
+                    saveData(); 
+                    renderMobileTasks();
+                });
+                subRow.appendChild(subInput);
+                const subDel = document.createElement('button');
+                subDel.textContent = '✕';
+                subDel.className = 'text-xs';
+                subDel.style.color = 'var(--muted)';
+                subDel.style.cursor = 'pointer';
+                subDel.style.background = 'none';
+                subDel.style.border = 'none';
+                subDel.addEventListener('click', () => {
+                    task.subtasks = task.subtasks.filter(s => s.id !== sub.id);
+                    saveData();
+                    renderTasks();
+                    renderMobileTasks();
+                });
+                subRow.appendChild(subDel);
+                subContainer.appendChild(subRow);
+            });
+            const addSubBtn = document.createElement('button');
+            addSubBtn.textContent = '+ Подзадача';
+            addSubBtn.className = 'text-xs';
+            addSubBtn.style.color = 'var(--secondary-dark)';
+            addSubBtn.style.cursor = 'pointer';
+            addSubBtn.style.background = 'none';
+            addSubBtn.style.border = 'none';
+            addSubBtn.addEventListener('click', () => {
+                task.subtasks.push({ id: uid(), name: 'Новая подзадача', done: false });
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                checkAchievements();
+            });
+            subContainer.appendChild(addSubBtn);
+            tdSub.appendChild(subContainer);
+            tr.appendChild(tdSub);
+            
+            const tdDel = document.createElement('td');
+            tdDel.className = 'p-2 text-center';
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '🗑️';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.background = 'none';
+            delBtn.style.border = 'none';
+            delBtn.addEventListener('click', () => {
+                appData.deletedTasks.push(task);
+                appData.tasks = appData.tasks.filter(t => t.id !== task.id);
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                renderTrash();
+            });
+            tdDel.appendChild(delBtn);
+            tr.appendChild(tdDel);
+            tbody.appendChild(tr);
+        });
+        updateTaskKpis();
+    }
+
+    function renderMobileTasks() {
+        const container = document.getElementById('mobileTasksList');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        const searchTerm = (document.getElementById('taskSearch').value || '').toLowerCase();
+        const filteredTasks = appData.tasks.filter(t => t.name.toLowerCase().includes(searchTerm)).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+        
+        if (filteredTasks.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted text-sm py-4">Задач пока нет. Нажмите "+" внизу</div>';
+            return;
+        }
+        
+        filteredTasks.forEach(task => {
+            const card = document.createElement('div');
+            card.className = 'mobile-task-card' + (task.pinned ? ' pinned' : '');
+            
+            const topRow = document.createElement('div');
+            topRow.className = 'flex items-center gap-2';
+            
+            const check = document.createElement('input');
+            check.type = 'checkbox';
+            check.className = 'habit-checkbox';
+            check.style.width = '22px';
+            check.style.height = '22px';
+            check.checked = task.done;
+            check.addEventListener('change', (e) => {
+                e.stopPropagation();
+                const wasDone = task.done;
+                task.done = e.target.checked;
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                updateTaskKpis();
+                if (task.done && !wasDone && !task.xpAwarded) {
+                    const todayStr = getToday();
+                    const tasksDoneToday = appData.tasks.filter(t => t.xpAwarded && t.xpDate === todayStr).length;
+                    if (tasksDoneToday < 3) {
+                        task.xpAwarded = true;
+                        task.xpDate = todayStr;
+                        addXP(10);
+                    }
+                }
+                checkAchievements();
+            });
+            topRow.appendChild(check);
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = task.name;
+            nameSpan.className = 'text-sm flex-1';
+            if (task.done) nameSpan.style.textDecoration = 'line-through';
+            topRow.appendChild(nameSpan);
+            
+            const pinIcon = document.createElement('span');
+            pinIcon.textContent = task.pinned ? '📌' : '';
+            pinIcon.style.fontSize = '14px';
+            topRow.appendChild(pinIcon);
+            
+            const arrow = document.createElement('span');
+            arrow.textContent = '▼';
+            arrow.style.fontSize = '10px';
+            arrow.style.color = 'var(--muted)';
+            topRow.appendChild(arrow);
+            
+            card.appendChild(topRow);
+            
+            const details = document.createElement('div');
+            details.className = 'mobile-task-details';
+            
+            const dateRow = document.createElement('div');
+            dateRow.className = 'flex items-center gap-2 mb-2';
+            const dateLabel = document.createElement('span');
+            dateLabel.textContent = '📅';
+            dateLabel.className = 'text-sm';
+            dateRow.appendChild(dateLabel);
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.value = task.date;
+            dateInput.className = 'inline-input text-xs';
+            dateInput.style.flex = '1';
+            dateInput.addEventListener('change', (e) => { 
+                task.date = e.target.value; 
+                saveData(); 
+                renderTasks(); 
+            });
+            dateRow.appendChild(dateInput);
+            details.appendChild(dateRow);
+            
+            const priorityRow = document.createElement('div');
+            priorityRow.className = 'flex items-center gap-2 mb-2';
+            const priorityLabel = document.createElement('span');
+            priorityLabel.textContent = '⚡';
+            priorityLabel.className = 'text-sm';
+            priorityRow.appendChild(priorityLabel);
+            const prioritySelect = document.createElement('select');
+            ['Срочно','Высокий','Средний','Низкий'].forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p; opt.textContent = p;
+                if (p === task.priority) opt.selected = true;
+                prioritySelect.appendChild(opt);
+            });
+            prioritySelect.className = 'inline-input text-xs';
+            prioritySelect.style.flex = '1';
+            prioritySelect.addEventListener('change', (e) => { 
+                task.priority = e.target.value; 
+                saveData(); 
+                renderTasks();
+            });
+            priorityRow.appendChild(prioritySelect);
+            details.appendChild(priorityRow);
+            
+            const pinRow = document.createElement('div');
+            pinRow.className = 'mb-2';
+            const pinBtn = document.createElement('button');
+            pinBtn.textContent = task.pinned ? '📌 Открепить' : '📍 Закрепить';
+            pinBtn.className = 'text-xs';
+            pinBtn.style.color = 'var(--secondary-dark)';
+            pinBtn.style.cursor = 'pointer';
+            pinBtn.style.background = 'none';
+            pinBtn.style.border = 'none';
+            pinBtn.addEventListener('click', () => { 
+                task.pinned = !task.pinned; 
+                saveData(); 
+                renderTasks(); 
+                renderMobileTasks(); 
+            });
+            pinRow.appendChild(pinBtn);
+            details.appendChild(pinRow);
+            
+            if (!task.subtasks) task.subtasks = [];
+            const subtasksContainer = document.createElement('div');
+            subtasksContainer.className = 'mb-2';
+            
+            task.subtasks.forEach(sub => {
+                const subRow = document.createElement('div');
+                subRow.className = 'flex items-center gap-2 mb-1';
+                const subCheck = document.createElement('input');
+                subCheck.type = 'checkbox';
+                subCheck.className = 'habit-checkbox';
+                subCheck.style.width = '16px';
+                subCheck.style.height = '16px';
+                subCheck.checked = sub.done;
+                subCheck.addEventListener('change', (e) => {
+                    const wasDone = sub.done;
+                    sub.done = e.target.checked;
+                    saveData();
+                    if (sub.done && !wasDone && !sub.xpAwarded) {
+                        const todayStr = getToday();
+                        const subtasksDoneToday = appData.tasks.reduce((count, t) => {
+                            if (t.subtasks) {
+                                t.subtasks.forEach(s => {
+                                    if (s.xpAwarded && s.xpDate === todayStr) count++;
+                                });
+                            }
+                            return count;
+                        }, 0);
+                        if (subtasksDoneToday < 5) {
+                            sub.xpAwarded = true;
+                            sub.xpDate = todayStr;
+                            addXP(5);
+                        }
+                    }
+                    checkAchievements();
+                });
+                subRow.appendChild(subCheck);
+                
+                const subInput = document.createElement('input');
+                subInput.type = 'text';
+                subInput.value = sub.name;
+                subInput.className = 'inline-input text-xs flex-1';
+                subInput.placeholder = 'Подзадача';
+                if (sub.done) subInput.style.textDecoration = 'line-through';
+                subInput.addEventListener('input', (e) => { 
+                    sub.name = e.target.value; 
+                    saveData(); 
+                    renderTasks();
+                });
+                subRow.appendChild(subInput);
+                
+                const subDel = document.createElement('button');
+                subDel.textContent = '✕';
+                subDel.className = 'text-xs';
+                subDel.style.color = 'var(--muted)';
+                subDel.style.cursor = 'pointer';
+                subDel.style.background = 'none';
+                subDel.style.border = 'none';
+                subDel.addEventListener('click', () => {
+                    task.subtasks = task.subtasks.filter(s => s.id !== sub.id);
+                    saveData();
+                    renderTasks();
+                    renderMobileTasks();
+                });
+                subRow.appendChild(subDel);
+                
+                subtasksContainer.appendChild(subRow);
+            });
+            
+            const addSubBtn = document.createElement('button');
+            addSubBtn.textContent = '+ Подзадача';
+            addSubBtn.className = 'text-xs';
+            addSubBtn.style.color = 'var(--secondary-dark)';
+            addSubBtn.style.cursor = 'pointer';
+            addSubBtn.style.background = 'none';
+            addSubBtn.style.border = 'none';
+            addSubBtn.addEventListener('click', () => {
+                task.subtasks.push({ id: uid(), name: 'Новая подзадача', done: false });
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                checkAchievements();
+            });
+            subtasksContainer.appendChild(addSubBtn);
+            
+            details.appendChild(subtasksContainer);
+            
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '🗑️ Удалить';
+            delBtn.className = 'text-xs';
+            delBtn.style.color = 'var(--primary-dark)';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.background = 'none';
+            delBtn.style.border = 'none';
+            delBtn.addEventListener('click', () => {
+                appData.deletedTasks.push(task);
+                appData.tasks = appData.tasks.filter(t => t.id !== task.id);
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                renderTrash();
+            });
+            details.appendChild(delBtn);
+            
+            card.appendChild(details);
+            
+            card.addEventListener('click', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+                card.classList.toggle('expanded');
+            });
+            
+            container.appendChild(card);
+        });
+    }
+    function calcDays(dateStr) {
+        if (!dateStr) return 0;
+        const today = new Date(getToday()); today.setHours(0,0,0,0);
+        const target = new Date(dateStr); target.setHours(0,0,0,0);
+        return Math.round((target - today) / 86400000);
+    }
+
+    function formatDays(days) {
+        if (days > 365) { const years = Math.floor(days / 365); const months = Math.floor((days % 365) / 30); return years + ' г ' + months + ' мес'; }
+        if (days > 30) { const months = Math.floor(days / 30); const daysLeft = days % 30; return months + ' мес ' + daysLeft + ' дн'; }
+        if (days > 0) return days + ' дн';
+        if (days === 0) return 'Сегодня';
+        return Math.abs(days) + ' дн назад';
+    }
+
+    function updateTaskKpis() {
+        const total = appData.tasks.length;
+        const done = appData.tasks.filter(t => t.done).length;
+        document.getElementById('tasksDoneKpi').textContent = done + '/' + total;
+        document.getElementById('progressPercentKpi').textContent = (total ? Math.round((done / total) * 100) : 0) + '%';
+        const todayStr = getToday();
+        document.getElementById('todayDeadlineKpi').textContent = appData.tasks.filter(t => t.date === todayStr).length;
+        document.getElementById('overdueKpi').textContent = appData.tasks.filter(t => !t.done && t.date && new Date(t.date) < new Date(new Date().setHours(0,0,0,0))).length;
+    }
+
+    document.getElementById('taskSearch').addEventListener('input', () => {
+        renderTasks();
+        renderMobileTasks();
+    });
+    
+    document.getElementById('addTaskRowBtn').addEventListener('click', () => {
+        appData.tasks.push({ id: uid(), name: 'Новая задача', date: getToday(), priority: 'Средний', category: 'Личное', done: false, pinned: false, subtasks: [] });
+        saveData();
+        renderTasks();
+        renderMobileTasks();
+        checkAchievements();
+    });
+
+    function renderTrash() {
+        const container = document.getElementById('trashContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        if (appData.deletedTasks.length === 0) { container.textContent = 'Пусто'; return; }
+        appData.deletedTasks.forEach(task => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between py-2 border-b';
+            row.style.borderColor = 'var(--border)';
+            const name = document.createElement('span');
+            name.textContent = task.name;
+            name.className = 'text-sm';
+            name.style.textDecoration = 'line-through';
+            name.style.opacity = '0.6';
+            row.appendChild(name);
+            const actions = document.createElement('div');
+            actions.className = 'flex gap-2';
+            const restoreBtn = document.createElement('button');
+            restoreBtn.textContent = '↩️ Восстановить';
+            restoreBtn.className = 'text-xs';
+            restoreBtn.style.color = 'var(--secondary-dark)';
+            restoreBtn.style.cursor = 'pointer';
+            restoreBtn.style.background = 'none';
+            restoreBtn.style.border = 'none';
+            restoreBtn.addEventListener('click', () => {
+                appData.tasks.push(task);
+                appData.deletedTasks = appData.deletedTasks.filter(t => t.id !== task.id);
+                saveData();
+                renderTasks();
+                renderMobileTasks();
+                renderTrash();
+            });
+            actions.appendChild(restoreBtn);
+            const permDelBtn = document.createElement('button');
+            permDelBtn.textContent = '✕ Удалить';
+            permDelBtn.className = 'text-xs';
+            permDelBtn.style.color = 'var(--primary-dark)';
+            permDelBtn.style.cursor = 'pointer';
+            permDelBtn.style.background = 'none';
+            permDelBtn.style.border = 'none';
+            permDelBtn.addEventListener('click', () => {
+                appData.deletedTasks = appData.deletedTasks.filter(t => t.id !== task.id);
+                saveData();
+                renderTrash();
+            });
+            actions.appendChild(permDelBtn);
+            row.appendChild(actions);
+            container.appendChild(row);
+        });
+    }
+
+    const SPENDING_COLORS = ['#FCA5A5', '#93C5FD', '#6EE7B7', '#FCD34D', '#C4B5FD', '#FDBA74', '#F9A8D4', '#7DD3FC', '#a78bfa', '#34d399', '#fbbf24', '#f87171'];
+
+    function renderBudget() {
+        const budgetMap = {
+            income: 'incomeBudgetRows',
+            subscriptions: 'subscriptionsRows',
+            regular: 'regularRows',
+            spending: 'spendingRows',
+            savings: 'savingsRows',
+            debts: 'debtsRows'
+        };
+        for (const [key, containerId] of Object.entries(budgetMap)) {
+            const el = document.getElementById(containerId);
+            if (!el) continue;
+            el.innerHTML = '';
+            appData.budget[key].forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 text-sm mb-2';
+                const subInput = document.createElement('input');
+                subInput.type = 'text';
+                subInput.value = item.sub;
+                subInput.className = 'inline-input text-sm flex-1';
+                subInput.placeholder = 'Новая подкатегория';
+                subInput.addEventListener('input', (e) => { 
+                    item.sub = e.target.value; 
+                    saveData(); 
+                    populateCategorySelects(); 
+                    renderMobileBudget();
+                });
+                row.appendChild(subInput);
+                const amtInput = document.createElement('input');
+                amtInput.type = 'number';
+                amtInput.value = item.amount;
+                amtInput.className = 'inline-input text-sm input-with-delete';
+                amtInput.style.width = '100px';
+                amtInput.placeholder = 'Лимит';
+                amtInput.addEventListener('input', (e) => { 
+                    item.amount = parseFloat(e.target.value) || 0; 
+                    saveData(); 
+                    updateFinancialData(); 
+                    renderMobileBudget();
+                });
+                row.appendChild(amtInput);
+                const delBtn = document.createElement('button');
+                delBtn.textContent = '✕';
+                delBtn.className = 'text-sm';
+                delBtn.style.color = 'var(--muted)';
+                delBtn.style.cursor = 'pointer';
+                delBtn.style.background = 'none';
+                delBtn.style.border = 'none';
+                delBtn.addEventListener('click', () => {
+                    appData.budget[key] = appData.budget[key].filter((_, i) => i !== idx);
+                    saveData();
+                    renderBudget();
+                    renderMobileBudget();
+                    populateCategorySelects();
+                });
+                row.appendChild(delBtn);
+                el.appendChild(row);
+            });
+        }
+        populateCategorySelects();
+        updateFinancialData();
+    }
+
+    function renderMobileBudget() {
+        const mobileMap = {
+            income: 'mobileIncomeRows',
+            subscriptions: 'mobileSubscriptionsRows',
+            regular: 'mobileRegularRows',
+            spending: 'mobileSpendingRows',
+            savings: 'mobileSavingsRows',
+            debts: 'mobileDebtsRows'
+        };
+        for (const [key, containerId] of Object.entries(mobileMap)) {
+            const el = document.getElementById(containerId);
+            if (!el) continue;
+            el.innerHTML = '';
+            appData.budget[key].forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex flex-col gap-1 text-xs mb-2';
+                const subInput = document.createElement('input');
+                subInput.type = 'text';
+                subInput.value = item.sub;
+                subInput.className = 'inline-input text-xs';
+                subInput.placeholder = 'Подкатегория';
+                subInput.style.minHeight = '36px';
+                subInput.addEventListener('input', (e) => { 
+                    item.sub = e.target.value; 
+                    saveData(); 
+                    populateCategorySelects(); 
+                    renderBudget();
+                });
+                row.appendChild(subInput);
+                const amtInput = document.createElement('input');
+                amtInput.type = 'number';
+                amtInput.value = item.amount;
+                amtInput.className = 'inline-input text-xs';
+                amtInput.style.minHeight = '36px';
+                amtInput.placeholder = 'Лимит';
+                amtInput.addEventListener('input', (e) => { 
+                    item.amount = parseFloat(e.target.value) || 0; 
+                    saveData(); 
+                    updateFinancialData(); 
+                    renderBudget();
+                });
+                row.appendChild(amtInput);
+                const delBtn = document.createElement('button');
+                delBtn.textContent = '✕ Удалить';
+                delBtn.className = 'text-xs';
+                delBtn.style.color = 'var(--muted)';
+                delBtn.style.cursor = 'pointer';
+                delBtn.style.minHeight = '36px';
+                delBtn.style.background = 'none';
+                delBtn.style.border = 'none';
+                delBtn.addEventListener('click', () => {
+                    appData.budget[key] = appData.budget[key].filter((_, i) => i !== idx);
+                    saveData();
+                    renderBudget();
+                    renderMobileBudget();
+                    populateCategorySelects();
+                });
+                row.appendChild(delBtn);
+                el.appendChild(row);
+            });
+        }
+    }
+
+    window.addBudgetItem = function(key) {
+        appData.budget[key].push({ sub: '', amount: 0, fact: 0 });
+        saveData();
+        renderBudget();
+        renderMobileBudget();
+        const container = document.getElementById(key + 'BudgetRows') || document.getElementById(key === 'income' ? 'incomeBudgetRows' : key + 'Rows');
+        if (container) {
+            const inputs = container.querySelectorAll('input[type="text"]');
+            const lastInput = inputs[inputs.length - 1];
+            if (lastInput) lastInput.focus();
+        }
+    };
+
+    function populateCategorySelects() {
+        const catSelect = document.getElementById('transactionCategory');
+        if (catSelect) {
+            const currentVal = catSelect.value;
+            catSelect.innerHTML = '';
+            ['Доход', 'Подписки', 'Регулярные платежи', 'Траты', 'Накопления', 'Долги'].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.textContent = cat;
+                if (cat === currentVal) opt.selected = true;
+                catSelect.appendChild(opt);
+            });
+        }
+        
+        const catSelectDesktop = document.getElementById('transactionCategoryDesktop');
+        if (catSelectDesktop) {
+            const currentValDesktop = catSelectDesktop.value;
+            catSelectDesktop.innerHTML = '';
+            ['Доход', 'Подписки', 'Регулярные платежи', 'Траты', 'Накопления', 'Долги'].forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat; opt.textContent = cat;
+                if (cat === currentValDesktop) opt.selected = true;
+                catSelectDesktop.appendChild(opt);
+            });
+        }
+        
+        updateSubcategories();
+        updateAmountPlaceholder();
+    }
+
+    function updateSubcategories() {
+        const catSelect = document.getElementById('transactionCategory');
+        const subSelect = document.getElementById('transactionSubcategory');
+        if (catSelect && subSelect) {
+            const cat = catSelect.value;
+            const key = getBudgetKey(cat);
+            subSelect.innerHTML = '<option value="">Подкатегория...</option>';
+            if (key && appData.budget[key]) {
+                appData.budget[key].forEach(item => {
+                    if (item.sub) {
+                        const opt = document.createElement('option');
+                        opt.value = item.sub; opt.textContent = item.sub;
+                        subSelect.appendChild(opt);
+                    }
+                });
+            }
+        }
+        
+        const catSelectDesktop = document.getElementById('transactionCategoryDesktop');
+        const subSelectDesktop = document.getElementById('transactionSubcategoryDesktop');
+        if (catSelectDesktop && subSelectDesktop) {
+            const cat = catSelectDesktop.value;
+            const key = getBudgetKey(cat);
+            subSelectDesktop.innerHTML = '<option value="">Подкатегория...</option>';
+            if (key && appData.budget[key]) {
+                appData.budget[key].forEach(item => {
+                    if (item.sub) {
+                        const opt = document.createElement('option');
+                        opt.value = item.sub; opt.textContent = item.sub;
+                        subSelectDesktop.appendChild(opt);
+                    }
+                });
+            }
+        }
+    }
+
+    function updateAmountPlaceholder() {
+        const catSelect = document.getElementById('transactionCategory');
+        const amountInput = document.getElementById('transactionAmount');
+        if (catSelect && amountInput) {
+            if (catSelect.value === 'Доход') amountInput.placeholder = 'Сколько получено';
+            else amountInput.placeholder = 'Сколько потрачено';
+        }
+        
+        const catSelectDesktop = document.getElementById('transactionCategoryDesktop');
+        const amountInputDesktop = document.getElementById('transactionAmountDesktop');
+        if (catSelectDesktop && amountInputDesktop) {
+            if (catSelectDesktop.value === 'Доход') amountInputDesktop.placeholder = 'Сколько получено';
+            else amountInputDesktop.placeholder = 'Сколько потрачено';
+        }
+    }
+
+    function getBudgetKey(cat) {
+        switch (cat) {
+            case 'Доход': return 'income';
+            case 'Подписки': return 'subscriptions';
+            case 'Регулярные платежи': return 'regular';
+            case 'Траты': return 'spending';
+            case 'Накопления': return 'savings';
+            case 'Долги': return 'debts';
+            default: return null;
+        }
+    }
+
+    document.getElementById('transactionCategory').addEventListener('change', () => {
+        updateSubcategories();
+        updateAmountPlaceholder();
+    });
+    
+    document.getElementById('transactionCategoryDesktop').addEventListener('change', () => {
+        updateSubcategories();
+        updateAmountPlaceholder();
+    });
+    function renderTransactions() {
+        const tbody = document.getElementById('transactionsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (appData.transactions.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="6" class="p-4 text-center text-muted text-sm">Транзакций пока нет</td>';
+            tbody.appendChild(emptyRow);
+        }
+        appData.transactions.forEach(tx => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b';
+            tr.style.borderColor = 'var(--border)';
+            const sign = tx.type === 'income' ? '+' : '-';
+            const color = tx.type === 'income' ? '#34d399' : 'var(--primary-dark)';
+            tr.innerHTML = '<td class="p-2">' + tx.date + '</td><td class="p-2">' + tx.desc + '</td><td class="p-2">' + tx.category + '</td><td class="p-2">' + tx.subcategory + '</td><td class="p-2 nowrap" style="color:' + color + ';">' + sign + fmt(tx.amount) + ' ₽</td><td class="p-2 text-center"><button class="text-sm" style="color:var(--muted);cursor:pointer;background:none;border:none;" onclick="deleteTransaction(\'' + tx.id + '\')" title="Удалить">✕</button></td>';
+            tbody.appendChild(tr);
+        });
+        updateFacts();
+        updateFinancialData();
+    }
+
+    function renderTransactionsMobile() {
+        const tbody = document.getElementById('transactionsTableBodyMobile');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (appData.transactions.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="5" class="p-4 text-center text-muted text-sm">Транзакций пока нет</td>';
+            tbody.appendChild(emptyRow);
+        }
+        appData.transactions.forEach(tx => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b';
+            tr.style.borderColor = 'var(--border)';
+            const sign = tx.type === 'income' ? '+' : '-';
+            const color = tx.type === 'income' ? '#34d399' : 'var(--primary-dark)';
+            tr.innerHTML = '<td class="p-2">' + tx.date + '</td><td class="p-2">' + tx.desc + '</td><td class="p-2">' + tx.category + '</td><td class="p-2 nowrap" style="color:' + color + ';">' + sign + fmt(tx.amount) + ' ₽</td><td class="p-2 text-center"><button class="text-sm" style="color:var(--muted);cursor:pointer;background:none;border:none;" onclick="deleteTransaction(\'' + tx.id + '\')" title="Удалить">✕</button></td>';
+            tbody.appendChild(tr);
+        });
+        updateFacts();
+        updateFinancialData();
+    }
+
+    window.deleteTransaction = function(id) {
+        appData.transactions = appData.transactions.filter(t => t.id !== id);
+        saveData();
+        renderTransactions();
+        renderTransactionsMobile();
+    };
+
+    function updateFacts() {
+        for (const key in appData.budget) appData.budget[key].forEach(item => item.fact = 0);
+        appData.transactions.forEach(tx => {
+            const key = getBudgetKey(tx.category);
+            if (key) {
+                const item = appData.budget[key].find(i => i.sub === tx.subcategory);
+                if (item) item.fact = (item.fact || 0) + tx.amount;
+            }
+        });
+    }
+
+    function updateFinancialData() {
+        renderFinanceSummary();
+        renderFinanceCharts();
+    }
+
+    function renderFinanceSummary() {
+        const tbody = document.querySelector('#financeSummaryTable tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            const categories = ['Доход', 'Подписки', 'Регулярные платежи', 'Траты', 'Накопления', 'Долги'];
+            categories.forEach(cat => {
+                const key = getBudgetKey(cat);
+                const budget = appData.budget[key] ? appData.budget[key].reduce((s, i) => s + i.amount, 0) : 0;
+                const fact = appData.budget[key] ? appData.budget[key].reduce((s, i) => s + (i.fact || 0), 0) : 0;
+                let diff, diffColor;
+                if (cat === 'Доход') {
+                    diff = fact - budget;
+                    diffColor = diff >= 0 ? '#34d399' : 'var(--primary-dark)';
+                } else {
+                    diff = budget - fact;
+                    diffColor = diff >= 0 ? '#34d399' : 'var(--primary-dark)';
+                }
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td class="p-2">' + cat + '</td><td class="p-2 nowrap">' + fmt(budget) + ' ₽</td><td class="p-2 nowrap">' + fmt(fact) + ' ₽</td><td class="p-2 nowrap" style="color:' + diffColor + ';">' + (diff >= 0 ? '+' : '') + fmt(diff) + ' ₽</td>';
+                tbody.appendChild(tr);
+            });
+        }
+        
+        const tbodyMobile = document.querySelector('#financeSummaryTableMobile tbody');
+        if (tbodyMobile) {
+            tbodyMobile.innerHTML = '';
+            const categories = ['Доход', 'Подписки', 'Регулярные платежи', 'Траты', 'Накопления', 'Долги'];
+            categories.forEach(cat => {
+                const key = getBudgetKey(cat);
+                const budget = appData.budget[key] ? appData.budget[key].reduce((s, i) => s + i.amount, 0) : 0;
+                const fact = appData.budget[key] ? appData.budget[key].reduce((s, i) => s + (i.fact || 0), 0) : 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = '<td class="p-2">' + cat + '</td><td class="p-2 nowrap">' + fmt(budget) + ' ₽</td><td class="p-2 nowrap">' + fmt(fact) + ' ₽</td>';
+                tbodyMobile.appendChild(tr);
+            });
+        }
+    }
+
+    function renderFinanceCharts() {
+        const barCanvas = document.getElementById('budgetBarChart');
+        if (barCanvas) {
+            const incomeBudget = appData.budget.income.reduce((s, i) => s + i.amount, 0);
+            const expenseBudget = appData.budget.spending.reduce((s, i) => s + i.amount, 0) + appData.budget.subscriptions.reduce((s, i) => s + i.amount, 0) + appData.budget.regular.reduce((s, i) => s + i.amount, 0) + appData.budget.debts.reduce((s, i) => s + i.amount, 0);
+            const incomeFact = appData.budget.income.reduce((s, i) => s + (i.fact || 0), 0);
+            const expenseFact = appData.budget.spending.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.subscriptions.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.regular.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.debts.reduce((s, i) => s + (i.fact || 0), 0);
+            if (charts.budgetBar) charts.budgetBar.destroy();
+            charts.budgetBar = new Chart(barCanvas.getContext('2d'), {
+                type: 'bar',
+                data: { labels: ['Доход', 'Расход'], datasets: [{ label: 'План', data: [incomeBudget, expenseBudget], backgroundColor: '#93C5FD' }, { label: 'Факт', data: [incomeFact, expenseFact], backgroundColor: '#FCA5A5' }] },
+                options: { plugins: { legend: { display: true, labels: { color: 'var(--muted)', font: { size: 10 } } } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+        
+        const barCanvasMobile = document.getElementById('budgetBarChartMobile');
+        if (barCanvasMobile) {
+            const incomeBudget = appData.budget.income.reduce((s, i) => s + i.amount, 0);
+            const expenseBudget = appData.budget.spending.reduce((s, i) => s + i.amount, 0) + appData.budget.subscriptions.reduce((s, i) => s + i.amount, 0) + appData.budget.regular.reduce((s, i) => s + i.amount, 0) + appData.budget.debts.reduce((s, i) => s + i.amount, 0);
+            const incomeFact = appData.budget.income.reduce((s, i) => s + (i.fact || 0), 0);
+            const expenseFact = appData.budget.spending.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.subscriptions.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.regular.reduce((s, i) => s + (i.fact || 0), 0) + appData.budget.debts.reduce((s, i) => s + (i.fact || 0), 0);
+            if (charts.budgetBarMobile) charts.budgetBarMobile.destroy();
+            charts.budgetBarMobile = new Chart(barCanvasMobile.getContext('2d'), {
+                type: 'bar',
+                data: { labels: ['Доход', 'Расход'], datasets: [{ label: 'План', data: [incomeBudget, expenseBudget], backgroundColor: '#93C5FD' }, { label: 'Факт', data: [incomeFact, expenseFact], backgroundColor: '#FCA5A5' }] },
+                options: { plugins: { legend: { display: true, labels: { color: 'var(--muted)', font: { size: 10 } } } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+        
+        const legend = document.getElementById('expenseLegend');
+        if (legend) {
+            legend.innerHTML = '';
+            const spendingItems = appData.budget.spending.filter(i => (i.fact || 0) > 0);
+            spendingItems.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between text-sm py-1';
+                row.innerHTML = '<span><span class="habit-color-dot" style="background:' + SPENDING_COLORS[idx % SPENDING_COLORS.length] + ';"></span>' + item.sub + '</span><span class="font-bold nowrap">' + fmt(item.fact || 0) + ' ₽</span>';
+                legend.appendChild(row);
+            });
+            if (spendingItems.length === 0) legend.innerHTML = '<div class="text-xs text-muted">Добавь транзакции, чтобы увидеть расходы</div>';
+        }
+    }
+
+    function addTransactionFromForm(date, desc, cat, sub, amount) {
+        if (!desc) { showToast('Введите описание'); return; }
+        if (!amount || amount <= 0) { showToast('Введите сумму больше нуля'); return; }
+        if (!sub) { showToast('Сначала добавь подкатегорию в бюджете'); return; }
+        const type = cat === 'Доход' ? 'income' : 'expense';
+        appData.transactions.push({ id: uid(), date, desc, category: cat, subcategory: sub, amount, type });
+        saveData();
+        renderTransactions();
+        renderTransactionsMobile();
+        const todayStr = getToday();
+        const todayTransactions = appData.transactions.filter(t => t.date === todayStr).length;
+        if (todayTransactions <= 5) addXP(5);
+        checkAchievements();
+        showToast('Транзакция добавлена');
+    }
+
+    document.getElementById('addTransactionBtn').addEventListener('click', () => {
+        const date = document.getElementById('transactionDate').value;
+        const desc = document.getElementById('transactionDesc').value.trim();
+        const cat = document.getElementById('transactionCategory').value;
+        const sub = document.getElementById('transactionSubcategory').value;
+        const amount = parseFloat(document.getElementById('transactionAmount').value);
+        addTransactionFromForm(date, desc, cat, sub, amount);
+        document.getElementById('transactionDesc').value = '';
+        document.getElementById('transactionAmount').value = '';
+    });
+
+    document.getElementById('addTransactionBtnDesktop').addEventListener('click', () => {
+        const date = document.getElementById('transactionDateDesktop').value;
+        const desc = document.getElementById('transactionDescDesktop').value.trim();
+        const cat = document.getElementById('transactionCategoryDesktop').value;
+        const sub = document.getElementById('transactionSubcategoryDesktop').value;
+        const amount = parseFloat(document.getElementById('transactionAmountDesktop').value);
+        addTransactionFromForm(date, desc, cat, sub, amount);
+        document.getElementById('transactionDescDesktop').value = '';
+        document.getElementById('transactionAmountDesktop').value = '';
+    });
+
+    function renderProgress() {
+        const container = document.getElementById('achievementsContainer');
+        const containerDesktop = document.getElementById('achievementsContainerDesktop');
+        
+        [container, containerDesktop].forEach(cont => {
+            if (!cont) return;
+            cont.innerHTML = '';
+            for (const achKey in ACHIEVEMENTS) {
+                const achData = getAchievementData(achKey);
+                if (!achData) continue;
+                const isUnlocked = achData.currentLevel > 0;
+                const isMaxed = achData.currentLevel >= achData.totalLevels;
+                const showAll = achievementTab === 'all';
+                const showUnlocked = achievementTab === 'unlocked' && isMaxed;
+                const showLocked = achievementTab === 'locked' && !isMaxed;
+                if (!showAll && !showUnlocked && !showLocked) continue;
+                const div = document.createElement('div');
+                div.className = 'card p-3 text-center';
+                const progressPercent = achData.nextThreshold ? Math.min((achData.metricValue / achData.nextThreshold) * 100, 100) : 100;
+                div.innerHTML = '<div class="achievement-badge ' + (isUnlocked ? 'unlocked' : '') + '">' + achData.icon + '</div><div class="font-bold mt-1 text-xs">' + achData.name + '</div><div class="text-xs text-muted">Уровень ' + achData.currentLevel + '/' + achData.totalLevels + '</div>' + (achData.nextThreshold ? '<div class="text-xs mt-1">' + achData.metricValue + '/' + achData.nextThreshold + '</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимум!</div>') + '<div class="progress-bar mt-2" style="height:4px;"><div class="progress-bar-fill" style="width:' + progressPercent + '%"></div></div>';
+                cont.appendChild(div);
+            }
+        });
+        
+        const xp = appData.totalXP || 0;
+        const info = getLevelInfo(xp);
+        
+        const levelInfo = document.getElementById('levelInfo');
+        const levelBarFill = document.getElementById('levelBarFill');
+        if (levelInfo) {
+            levelInfo.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
+        }
+        if (levelBarFill) levelBarFill.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
+        
+        const levelInfoMobile = document.getElementById('levelInfoMobile');
+        const levelBarFillMobile = document.getElementById('levelBarFillMobile');
+        if (levelInfoMobile) {
+            levelInfoMobile.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
+        }
+        if (levelBarFillMobile) levelBarFillMobile.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
+    }
+
+    document.querySelectorAll('.mini-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mini-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            achievementTab = btn.dataset.achTab;
+            renderProgress();
+        });
+    });
+    const DOCS = {
+        main: {
+            title: 'Главная',
+            html: '<p>Добро пожаловать в базу знаний приложения «Всё под рукой».</p><p>Выбери раздел слева, чтобы узнать о назначении элементов интерфейса.</p><p>Приложение состоит из 5 вкладок: Привычки, Задачи, Финансы, Инструкция, Прогресс.</p><p>Все данные сохраняются автоматически в браузере.</p>'
+        },
+        habits: {
+            title: 'Привычки',
+            html: '<h3>Привычки</h3><h4>Цели на год</h4><p>Раздел для долгосрочных целей по 5 сферам жизни.</p><p>Нажми <code>+ Цель</code>, чтобы добавить цель.</p><h4>Трекер привычек</h4><p>Нажми <code>+ Добавить привычку</code> и введи название.</p><p>Кнопки <code>Пн-Вс</code> — выбор дней недели.</p><p>На мобильных: карточки с полным календарём месяца.</p><h4>Ежемесячные задачи</h4><p>Разовые задачи на месяц.</p><h4>Заметки</h4><p>Свободное место для мыслей.</p><h4>Аналитика</h4><p>Процент выполнения каждой привычки.</p>'
+        },
+        tasks: {
+            title: 'Задачи',
+            html: '<h3>Задачи</h3><h4>Создание</h4><p>Нажми <code>+ Добавить задачу</code>.</p><h4>Приоритеты</h4><p>Срочно, Высокий, Средний, Низкий.</p><h4>Закрепление</h4><p>Кнопка 📌 закрепляет задачу.</p><h4>Подзадачи</h4><p>Разбивай большие задачи.</p><h4>Корзина</h4><p>Удалённые задачи можно восстановить.</p><h4>Мобильная версия</h4><p>Нажми на задачу, чтобы раскрыть детали.</p>'
+        },
+        finance: {
+            title: 'Финансы',
+            html: '<h3>Финансы</h3><h4>Бюджет</h4><p>Задавай лимиты на месяц.</p><h4>Транзакции</h4><p>Вноси каждую покупку или доход.</p><h4>Обзор</h4><p>Таблица пересчитывается автоматически.</p><h4>Мобильная версия</h4><p>Подвкладки: Бюджет, Транзакции, Обзор.</p>'
+        },
+        profile: {
+            title: 'Профиль',
+            html: '<h3>Профиль</h3><h4>Аватарка</h4><p>Выбери одну из 6 аватарок.</p><h4>Никнейм</h4><p>Введи своё имя.</p><h4>Обводки</h4><p>Открываются по уровням.</p><h4>Темы</h4><p>12 тем оформления.</p><h4>Ночной режим</h4><p>Кнопка 🌙 в шапке.</p>'
+        }
+    };
+
+    function renderDocs(docKey) {
+        const content = document.getElementById('docsContent');
+        if (!content) return;
+        const doc = DOCS[docKey] || DOCS.main;
+        content.innerHTML = doc.html;
+        document.querySelectorAll('.docs-nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.doc === docKey);
+        });
+    }
+
+    document.querySelectorAll('.docs-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => renderDocs(btn.dataset.doc));
+    });
+
+    document.getElementById('tgButton').addEventListener('click', () => {
+        console.log('Подпишись: t.me/six7_hub');
+        window.open(TG_LINK, '_blank');
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify({
+            ...appData,
+            _made_by: '@six7_hub',
+            _channel: 't.me/six7_hub'
+        }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'vse_pod_rukoy_backup.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Данные экспортированы');
+    });
+
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+
+    document.getElementById('importFile').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const imported = JSON.parse(ev.target.result);
+                if (confirm('Заменить текущие данные импортированными?')) {
+                    appData = imported;
+                    saveData();
+                    renderAll();
+                    showToast('Данные импортированы');
+                }
+            } catch (err) {
+                showToast('Ошибка импорта: неверный файл');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    document.getElementById('printBtn').addEventListener('click', () => {
+        document.getElementById('settingsPanel').classList.remove('open');
+        setTimeout(() => window.print(), 100);
+    });
+
+    document.getElementById('resetAllBtn').addEventListener('click', () => {
+        if (confirm('Сброс удалит все данные. Рекомендуем сначала создать копию через Экспорт. Продолжить?')) {
+            if (confirm('Это действие нельзя отменить! Сбросить?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(ONBOARDING_KEY);
+                localStorage.removeItem(SETTINGS_KEY);
+                localStorage.removeItem(FIRST_LAUNCH_KEY);
+                localStorage.removeItem(DEVICE_KEY);
+                appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                settings = { theme: 'theme-coral', dark: false };
+                deviceMode = null;
+                isFirstLaunch = true;
+                saveData();
+                saveSettings();
+                renderAll();
+                applyTheme();
+                applyDeviceMode();
+                startOnboarding();
+                showToast('Все данные сброшены');
+                settingsPanel.classList.remove('open');
+            }
+        }
+    });
+
+    function renderAllCharts() {
+        renderDonut();
+        renderFinanceCharts();
+        renderAnalytics();
+    }
+
+    window.addEventListener('resize', () => {
+        updateFAB();
+        updateMobileSubtabs();
+        if (document.getElementById('onboardingOverlay').style.display === 'block' && currentOnboardingStep > 0) {
+            showOnboardingStep(currentOnboardingStep);
+        }
+    });
+
+    function init() {
+        applyTheme();
+        applyDeviceMode();
+        renderAll();
+        updateHeader();
+        updateFAB();
+        updateMobileSubtabs();
+        
+        if (!deviceMode) {
+            document.getElementById('welcomeOverlay').style.display = 'flex';
+        } else {
+            startOnboarding();
+        }
+    }
+
+    init();
+})();
+</script>
+</body>
+</html>
+<!-- @six7_hub · t.me/six7_hub -->
