@@ -1676,9 +1676,19 @@
         };
         
         if (step.element && step.element.startsWith('.tab-btn')) {
-            const tabBtn = document.querySelector(step.element);
-            if (tabBtn) tabBtn.click();
-        } else if (step.element && tabMap[step.element]) {
+    const tabBtn = document.querySelector(step.element);
+    if (tabBtn) {
+        tabBtn.click();
+        setTimeout(() => {
+            const freshRect = tabBtn.getBoundingClientRect();
+            highlight.style.left = (freshRect.left - 5) + 'px';
+            highlight.style.top = (freshRect.top - 5) + 'px';
+            highlight.style.width = (freshRect.width + 10) + 'px';
+            highlight.style.height = (freshRect.height + 10) + 'px';
+            highlight.style.display = 'block';
+        }, 300);
+    }
+} else if (step.element && tabMap[step.element]) {
             const tabId = tabMap[step.element];
             const tabBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
             if (tabBtn) tabBtn.click();
@@ -1711,7 +1721,9 @@
         } else {
             const target = document.querySelector(step.element);
             if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (step.element !== '.tab-btn[data-tab="tab5"]') {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
                 setTimeout(() => {
                     highlight.style.display = 'block';
                     const rect = target.getBoundingClientRect();
@@ -1890,15 +1902,15 @@
         tooltip.style.marginTop = '0';
         
         const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
-        if (isFabStep) {
-            tooltip.style.bottom = 'auto';
-            tooltip.style.top = '20px';
-            tooltip.style.marginTop = '-20px';
-        } else {
-            tooltip.style.bottom = '76px';
-            tooltip.style.top = 'auto';
-            tooltip.style.marginTop = '0';
-        }
+if (isFabStep) {
+    tooltip.style.bottom = 'auto';
+    tooltip.style.top = '120px';
+    tooltip.style.marginTop = '0';
+} else {
+    tooltip.style.bottom = '76px';
+    tooltip.style.top = 'auto';
+    tooltip.style.marginTop = '0';
+}
         
         document.getElementById('onboardingTitle').style.fontSize = '13px';
         document.getElementById('onboardingText').style.fontSize = '11px';
@@ -1916,27 +1928,28 @@
             tooltip.style.left = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
             tooltip.style.marginTop = '0';
-        } else {
-            const target = document.querySelector(elementSelector);
-            if (target && target.offsetParent !== null) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => {
-                    const freshTarget = document.querySelector(elementSelector);
-                    if (freshTarget && freshTarget.offsetParent !== null) {
-                        highlight.style.display = 'block';
-                        const freshRect = freshTarget.getBoundingClientRect();
-                        highlight.style.left = (freshRect.left - 3) + 'px';
-                        highlight.style.top = (freshRect.top - 3) + 'px';
-                        highlight.style.width = (freshRect.width + 6) + 'px';
-                        highlight.style.height = (freshRect.height + 6) + 'px';
-                        highlight.style.zIndex = '2001';
-                    }
-                }, 400);
-            } else {
-                highlight.style.display = 'none';
+       } else {
+    const target = document.querySelector(elementSelector);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            const freshTarget = document.querySelector(elementSelector);
+            if (freshTarget) {
+                highlight.style.display = 'block';
+                const freshRect = freshTarget.getBoundingClientRect();
+                highlight.style.left = (freshRect.left - 3) + 'px';
+                highlight.style.top = (freshRect.top - 3) + 'px';
+                highlight.style.width = (freshRect.width + 6) + 'px';
+                highlight.style.height = (freshRect.height + 6) + 'px';
+                highlight.style.zIndex = '2001';
+                highlight.style.border = '3px solid var(--primary-dark)';
+                highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             }
-        }
+        }, 400);
+    } else {
+        highlight.style.display = 'none';
     }
+}
 
     document.getElementById('onboardingNext').addEventListener('click', () => { showOnboardingStep(currentOnboardingStep + 1); });
     document.getElementById('onboardingSkip').addEventListener('click', () => {
@@ -4120,9 +4133,10 @@
                 document.querySelectorAll('.device-select-btn').forEach(btn => btn.classList.remove('active'));
                 
                 clearOnboardingDOM();
-                
-                settingsPanel.classList.remove('open');
-                settingsOverlay.classList.remove('open');
+resetToHabitsTab();
+
+settingsPanel.classList.remove('open');
+settingsOverlay.classList.remove('open');
                 
                 appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
                 settings = { theme: 'theme-coral', dark: false };
