@@ -278,7 +278,7 @@
         .theme-btn.locked { opacity: 0.35; }
         .theme-btn.locked::after { content: "🔒"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
         
-        .onboarding-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; background: rgba(0,0,0,0.5); }
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; }
         .onboarding-highlight { position: absolute; border: 3px solid var(--primary-dark); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); transition: all 0.4s ease; pointer-events: none; z-index: 2001; }
         .onboarding-tooltip { position: fixed; background: var(--card); color: var(--text); border-radius: 16px; padding: 20px; max-width: 360px; max-height: 85vh; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); pointer-events: auto; z-index: 2002; display: flex; flex-direction: column; }
         .onboarding-tooltip .tooltip-content { overflow-y: auto; flex: 1; margin-bottom: 12px; }
@@ -1917,21 +1917,19 @@ if (isFabStep) {
         document.getElementById('onboardingText').style.fontSize = '11px';
         
                 if (!elementSelector) {
-            highlight.style.display = 'block';
-            highlight.style.left = '0';
-            highlight.style.top = '0';
-            highlight.style.width = '100%';
-            highlight.style.height = '100%';
-            highlight.style.border = 'none';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.7)';
-            highlight.style.zIndex = '2001';
-            tooltip.style.bottom = 'auto';
-            tooltip.style.top = '50%';
-            tooltip.style.left = '50%';
-            tooltip.style.transform = 'translate(-50%, -50%)';
-            tooltip.style.marginTop = '0';
-            tooltip.style.zIndex = '2002';
-        } else {
+    highlight.style.display = 'block';
+    highlight.style.left = '0';
+    highlight.style.top = '0';
+    highlight.style.width = '100%';
+    highlight.style.height = '100%';
+    highlight.style.border = 'none';
+    highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+    tooltip.style.bottom = 'auto';
+    tooltip.style.top = '50%';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translate(-50%, -50%)';
+    tooltip.style.marginTop = '0';
+} else {
             const target = document.querySelector(elementSelector);
             if (target && target.offsetParent !== null) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
