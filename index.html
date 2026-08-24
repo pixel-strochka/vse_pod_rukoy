@@ -848,7 +848,6 @@
                 </div>
             </div>
         </div>
-
         <!-- ВКЛАДКА 2: ЗАДАЧИ -->
         <div id="tab2" class="tab-panel hidden space-y-5">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -896,6 +895,7 @@
                 <div id="trashContainer" class="text-sm text-muted">Пусто</div>
             </div>
         </div>
+
         <!-- ВКЛАДКА 3: ФИНАНСЫ -->
         <div id="tab3" class="tab-panel hidden space-y-5">
             <!-- МОБИЛЬНЫЕ ПОДВКЛАДКИ -->
@@ -1046,7 +1046,6 @@
                 </div>
             </div>
         </div>
-
         <!-- ВКЛАДКА 4: ИНСТРУКЦИЯ -->
         <div id="tab4" class="tab-panel hidden">
             <div class="text-center mb-4">
@@ -1194,6 +1193,7 @@
     function getToday() {
         return new Date().toISOString().split('T')[0];
     }
+
     const LEVELS = [
         { stage: '🌱 Новичок', desc: 'Каждый путь начинается с первого шага', sub: ['Начало пути', 'Первый шаг', 'Робкий старт', 'Любопытный', 'Проснувшийся'], xpPerLevel: 20 },
         { stage: '🌿 Ученик', desc: 'Ты уже втянулся и учишься', sub: ['Втянулся', 'Старательный', 'Упорный', 'Внимательный', 'Понятливый'], xpPerLevel: 30 },
@@ -1361,7 +1361,6 @@
             renderMobileHabits();
         }
     }
-
     function getLevelInfo(totalXP) {
         let cumulativeXP = 0;
         for (let i = 0; i < LEVELS.length; i++) {
@@ -1563,13 +1562,18 @@
     }
 
     const onboardingSteps = [
-        { element: null, title: '👋 Добро пожаловать!', text: 'Это «Всё под рукой» — твой личный органайзер. Нажимай «Далее».' },
-        { element: '#annualSection', title: '🌍 Цели на год', text: 'Ставь цели по 5 сферам жизни.', mobileElement: '#mobileHabitGoals', mobileText: 'Ставь цели по 5 сферам жизни.' },
-        { element: '#habitSection', title: '📋 Трекер привычек', text: 'Создавай привычки и выбирай дни недели.', mobileElement: '#mobileHabitTracker', mobileText: 'Создавай привычки и отмечай в календаре.' },
-        { element: '#addHabitRowBtn', title: '➕ Добавление', text: 'Нажми сюда, чтобы добавить привычку.', mobileElement: null, mobileText: 'Нажми на "+" внизу, чтобы добавить.' },
-        { element: '.tab-btn[data-tab="tab2"]', title: '📝 Задачи', text: 'Переключаю на «Задачи». Здесь таблица задач с приоритетами, сроками и подзадачами.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab2"]', mobileText: 'Здесь твои задачи. Нажми на задачу, чтобы раскрыть детали, подзадачи и приоритет.' },
-        { element: '.tab-btn[data-tab="tab3"]', title: '📊 Финансы', text: 'Переключаю на «Финансы». Планируй бюджет по категориям и вноси транзакции.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab3"]', mobileText: 'Бюджет, транзакции и обзор. Сначала добавь подкатегории в бюджете.' },
-        { element: '.tab-btn[data-tab="tab5"]', title: '🏆 Прогресс', text: 'Получай XP за действия и повышай уровень! Открывай темы, обводки и ачивки.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab5"]', mobileText: 'Уровень, достижения, статистика. Получай XP за активность.' },
+        { element: null, title: '👋 Добро пожаловать!', text: 'Это «Всё под рукой» — твой личный органайзер. Здесь ты будешь вести привычки, задачи и финансы. Нажимай «Далее».', mobileElement: null, mobileText: 'Это «Всё под рукой» — твой личный органайзер. Нажимай «Далее».' },
+        { element: '#annualSection', title: '🌍 Цели на год', text: 'Ставь долгосрочные цели по 5 сферам: 💰 Финансы, 📚 Саморазвитие, 💼 Карьера, 🌿 Здоровье, ❤️ Отношения. Нажми «+ Цель». У целей могут быть подцели.', mobileElement: '#mobileHabitGoals', mobileText: 'Ставь цели по 5 сферам. Нажми «+ Цель». У целей могут быть подцели.' },
+        { element: '#habitSection', title: '📋 Трекер привычек', text: 'Каждая строка — привычка. Кнопки Пн-Вс — дни недели. Отмечай галочками дни, когда сделал. Месяц меняется сверху.', mobileElement: '#mobileHabitTracker', mobileText: 'Каждая карточка — привычка. Выбирай дни недели. Отмечай дни в календаре.' },
+        { element: '#addHabitRowBtn', title: '➕ Добавление привычки', text: 'Нажми сюда, чтобы добавить привычку. Введи название и выбери дни.', mobileElement: null, mobileText: 'Нажми «+» внизу, чтобы добавить привычку.' },
+        { element: '.tab-btn[data-tab="tab2"]', title: '📝 Задачи — переключение', text: 'Переключаю на «Задачи». Здесь список дел.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab2"]', mobileText: 'Переключаю на «Задачи».' },
+        { element: '#tasksSection', title: '📝 Задачи — таблица', text: 'Таблица задач. Колонки: 📌 закрепление, название, срок, приоритет, статус, категория, подзадачи. Нажми 📌, чтобы закрепить.', mobileElement: '#mobileTasksList', mobileText: 'Карточки задач. Нажми на карточку, чтобы раскрыть детали: срок, приоритет, подзадачи.' },
+        { element: '#addTaskRowBtn', title: '📝 Задачи — добавление', text: 'Нажми сюда, чтобы добавить задачу. Заполни название, срок, приоритет. Подзадачи — внутри.', mobileElement: null, mobileText: 'Нажми «+» внизу, чтобы добавить задачу.' },
+        { element: '.tab-btn[data-tab="tab3"]', title: '📊 Финансы — переключение', text: 'Переключаю на «Финансы». Здесь бюджет и траты.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab3"]', mobileText: 'Переключаю на «Финансы».' },
+        { element: '#transactionsSection', title: '📊 Финансы — бюджет', text: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией (Доходы, Траты и т.д.) и введи название. Например: «Продукты».', mobileElement: '#mobileFinanceBudget', mobileText: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией.' },
+        { element: '#transactionsSection', title: '📊 Финансы — транзакции', text: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете. Затем заполни: дату, описание, категорию, подкатегорию, сумму.', mobileElement: '#mobileFinanceTransactions', mobileText: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете.' },
+        { element: '#addTransactionBtnDesktop', title: '📊 Финансы — добавление', text: 'Нажми сюда, чтобы добавить транзакцию. Не забудь: сначала подкатегория в бюджете!', mobileElement: '#addTransactionBtn', mobileText: 'Нажми сюда, чтобы добавить транзакцию.' },
+        { element: '.tab-btn[data-tab="tab5"]', title: '🏆 Прогресс', text: 'Получай XP за действия! Открывай темы, обводки, ачивки.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab5"]', mobileText: 'Уровень, достижения, статистика.' },
         { element: '#tgButton', title: '📱 Telegram', text: 'Подпишись на канал «Пиксель и строчка»!' }
     ];
 
@@ -3352,6 +3356,7 @@
             container.appendChild(row);
         });
     }
+
     const SPENDING_COLORS = ['#FCA5A5', '#93C5FD', '#6EE7B7', '#FCD34D', '#C4B5FD', '#FDBA74', '#F9A8D4', '#7DD3FC', '#a78bfa', '#34d399', '#fbbf24', '#f87171'];
 
     function renderBudget() {
@@ -3810,19 +3815,21 @@
         const xp = appData.totalXP || 0;
         const info = getLevelInfo(xp);
         
-        const levelInfo = document.getElementById('levelInfo');
-        const levelBarFill = document.getElementById('levelBarFill');
-        if (levelInfo) {
-            levelInfo.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
+        if (isMobile()) {
+            const levelInfoMobile = document.getElementById('levelInfoMobile');
+            const levelBarFillMobile = document.getElementById('levelBarFillMobile');
+            if (levelInfoMobile) {
+                levelInfoMobile.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
+            }
+            if (levelBarFillMobile) levelBarFillMobile.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
+        } else {
+            const levelInfo = document.getElementById('levelInfo');
+            const levelBarFill = document.getElementById('levelBarFill');
+            if (levelInfo) {
+                levelInfo.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
+            }
+            if (levelBarFill) levelBarFill.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
         }
-        if (levelBarFill) levelBarFill.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
-        
-        const levelInfoMobile = document.getElementById('levelInfoMobile');
-        const levelBarFillMobile = document.getElementById('levelBarFillMobile');
-        if (levelInfoMobile) {
-            levelInfoMobile.innerHTML = '<div class="flex justify-between items-center flex-wrap gap-2"><span class="font-bold text-lg">' + info.stage + ' — Уровень ' + info.level + ': ' + info.sub + '</span><span class="text-sm text-muted">' + xp + ' XP</span></div><div class="text-xs text-muted mt-1">' + info.desc + '</div>' + (info.needed ? '<div class="text-xs text-muted mt-1">До следующего уровня: ' + (info.needed - info.current) + ' XP</div>' : '<div class="text-xs mt-1" style="color:var(--secondary-dark);">Максимальный уровень!</div>');
-        }
-        if (levelBarFillMobile) levelBarFillMobile.style.width = info.needed ? Math.min((info.current / info.needed) * 100, 100) + '%' : '100%';
     }
 
     document.querySelectorAll('.mini-tab').forEach(btn => {
