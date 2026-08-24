@@ -1696,17 +1696,19 @@
         document.getElementById('onboardingTitle').style.fontSize = '18px';
         document.getElementById('onboardingText').style.fontSize = '14px';
         
-        if (!step.element) {
+                if (!step.element) {
             highlight.style.display = 'block';
             highlight.style.left = '0';
             highlight.style.top = '0';
             highlight.style.width = '100%';
             highlight.style.height = '100%';
             highlight.style.border = 'none';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.7)';
+            highlight.style.zIndex = '2001';
             tooltip.style.left = '50%';
             tooltip.style.top = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
+            tooltip.style.zIndex = '2002';
         } else {
             const target = document.querySelector(step.element);
             if (target) {
@@ -1901,19 +1903,21 @@
         document.getElementById('onboardingTitle').style.fontSize = '13px';
         document.getElementById('onboardingText').style.fontSize = '11px';
         
-        if (!elementSelector) {
+                if (!elementSelector) {
             highlight.style.display = 'block';
             highlight.style.left = '0';
             highlight.style.top = '0';
             highlight.style.width = '100%';
             highlight.style.height = '100%';
             highlight.style.border = 'none';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.7)';
+            highlight.style.zIndex = '2001';
             tooltip.style.bottom = 'auto';
             tooltip.style.top = '50%';
             tooltip.style.left = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
             tooltip.style.marginTop = '0';
+            tooltip.style.zIndex = '2002';
         } else {
             const target = document.querySelector(elementSelector);
             if (target && target.offsetParent !== null) {
