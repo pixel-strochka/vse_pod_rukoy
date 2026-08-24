@@ -1002,7 +1002,6 @@
                     <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">💳 Долги <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('debts')">+</button></h4><div id="debtsRows"></div></div>
                 </div>
             </div>
-
             <div class="grid lg:grid-cols-2 gap-4 desktop-only">
                 <div class="card p-5" id="financeSummary">
                     <h2 class="text-lg font-bold mb-2">💰 Обзор</h2>
@@ -1675,27 +1674,13 @@
             '#addTransactionBtnDesktop': 'tab3'
         };
         
-                if (step.element && step.element.startsWith('.tab-btn')) {
+        if (step.element && step.element.startsWith('.tab-btn')) {
             const tabBtn = document.querySelector(step.element);
-            if (tabBtn) {
-                tabBtn.click();
-                setTimeout(() => {
-                    showOnboardingStepDesktop(index);
-                }, 300);
-                return;
-            }
+            if (tabBtn) tabBtn.click();
         } else if (step.element && tabMap[step.element]) {
             const tabId = tabMap[step.element];
             const tabBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
-            if (tabBtn) {
-                tabBtn.click();
-                if (step.element === '#desktopTransactionForm' || step.element === '#desktopBudgetSection' || step.element === '#addTransactionBtnDesktop') {
-                    setTimeout(() => {
-                        showOnboardingStepDesktop(index);
-                    }, 300);
-                    return;
-                }
-            }
+            if (tabBtn) tabBtn.click();
         }
 
         tooltip.style.display = 'flex';
@@ -1711,7 +1696,7 @@
         document.getElementById('onboardingTitle').style.fontSize = '18px';
         document.getElementById('onboardingText').style.fontSize = '14px';
         
-                if (!step.element) {
+        if (!step.element) {
             highlight.style.display = 'block';
             highlight.style.left = '0';
             highlight.style.top = '0';
@@ -1732,24 +1717,28 @@
                     const tooltipWidth = 360;
                     const tooltipHeight = 200;
                     const offset = 12;
-                    if (step.element === '.tab-btn[data-tab="tab5"]') {
-                        highlight.style.left = (rect.left - 5) + 'px';
-                        highlight.style.top = (rect.top + 25) + 'px';
-                    } else if (step.element === '#desktopTransactionForm' || step.element === '#desktopBudgetSection' || step.element === '#addTransactionBtnDesktop') {
-                        highlight.style.left = (rect.left - 5) + 'px';
-                        highlight.style.top = (rect.top + 5) + 'px';
-                    } else {
-                        highlight.style.left = (rect.left - 5) + 'px';
-                        highlight.style.top = (rect.top - 5) + 'px';
-                    }
+                    highlight.style.left = (rect.left - 5) + 'px';
+                    highlight.style.top = (rect.top - 5) + 'px';
                     highlight.style.width = (rect.width + 10) + 'px';
                     highlight.style.height = (rect.height + 10) + 'px';
                     let left = rect.left;
                     let top = rect.bottom + offset;
                     if (step.element === '.tab-btn[data-tab="tab5"]') {
-                        top = rect.bottom + 30;
-                    }
-                    if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
+    const fixedRect = target.getBoundingClientRect();
+    highlight.style.left = (fixedRect.left - 5) + 'px';
+    highlight.style.top = (fixedRect.top + fixedRect.height) + 'px'; // Ровно на высоту вкладки ниже
+    highlight.style.width = (fixedRect.width + 10) + 'px';
+    highlight.style.height = (fixedRect.height + 10) + 'px';
+    top = fixedRect.bottom + fixedRect.height + 30;
+    setTimeout(() => {
+        const newRect = target.getBoundingClientRect();
+        highlight.style.left = (newRect.left - 5) + 'px';
+        highlight.style.top = (newRect.top + newRect.height) + 'px'; // Ровно на высоту вкладки ниже
+        highlight.style.width = (newRect.width + 10) + 'px';
+        highlight.style.height = (newRect.height + 10) + 'px';
+        highlight.style.display = 'block';
+    }, 200);
+}                    if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
                     if (left < 20) left = 20;
                     if (top + tooltipHeight > window.innerHeight - 20) top = rect.top - tooltipHeight - offset;
                     if (top < 20) top = 20;
@@ -1898,11 +1887,11 @@
         tooltip.style.transform = 'translateX(-50%)';
         tooltip.style.marginTop = '0';
         
-                const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
+        const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
         if (isFabStep) {
             tooltip.style.bottom = 'auto';
-            tooltip.style.top = '120px';
-            tooltip.style.marginTop = '0';
+            tooltip.style.top = '20px';
+            tooltip.style.marginTop = '-20px';
         } else {
             tooltip.style.bottom = '76px';
             tooltip.style.top = 'auto';
@@ -1925,18 +1914,14 @@
             tooltip.style.left = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
             tooltip.style.marginTop = '0';
-                } else {
+        } else {
             const target = document.querySelector(elementSelector);
-            if (target && (target.offsetParent !== null || isFabStep)) {
+            if (target && target.offsetParent !== null) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => {
                     const freshTarget = document.querySelector(elementSelector);
-                    if (freshTarget && (freshTarget.offsetParent !== null || isFabStep)) {
+                    if (freshTarget && freshTarget.offsetParent !== null) {
                         highlight.style.display = 'block';
-                        if (isFabStep) {
-                            highlight.style.border = '3px solid var(--primary-dark)';
-                            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
-                        }
                         const freshRect = freshTarget.getBoundingClientRect();
                         highlight.style.left = (freshRect.left - 3) + 'px';
                         highlight.style.top = (freshRect.top - 3) + 'px';
@@ -4142,11 +4127,10 @@
                 isFirstLaunch = true;
                 saveData();
                 saveSettings();
-                            renderAll();
-            applyTheme();
-            resetToHabitsTab();
-            showToast('Все данные сброшены');
-            document.getElementById('welcomeOverlay').style.display = 'flex';
+                renderAll();
+                applyTheme();
+                showToast('Все данные сброшены');
+                document.getElementById('welcomeOverlay').style.display = 'flex';
             }
         }
     });
