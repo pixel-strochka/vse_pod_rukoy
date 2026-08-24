@@ -1852,6 +1852,20 @@
             }
         }
         
+        if (isFabStep) {
+            setTimeout(() => {
+                const fab = document.querySelector('#fabBtn');
+                if (fab && fab.offsetParent !== null) {
+                    highlight.style.display = 'block';
+                    const fabRect = fab.getBoundingClientRect();
+                    highlight.style.left = (fabRect.left - 5) + 'px';
+                    highlight.style.top = (fabRect.top - 5) + 'px';
+                    highlight.style.width = (fabRect.width + 10) + 'px';
+                    highlight.style.height = (fabRect.height + 10) + 'px';
+                    highlight.style.zIndex = '2001';
+                }
+            }, 400);
+        }
         if (elementSelector && elementSelector.startsWith('#mobileFinance')) {
             const subtabMap = {
                 '#mobileFinanceBudget': 'finance-budget',
@@ -1877,20 +1891,7 @@
                 });
             }
         }
-if (isFabStep) {
-    setTimeout(() => {
-        const fab = document.querySelector('#fabBtn');
-        if (fab && fab.offsetParent !== null) {
-            highlight.style.display = 'block';
-            const fabRect = fab.getBoundingClientRect();
-            highlight.style.left = (fabRect.left - 5) + 'px';
-            highlight.style.top = (fabRect.top - 5) + 'px';
-            highlight.style.width = (fabRect.width + 10) + 'px';
-            highlight.style.height = (fabRect.height + 10) + 'px';
-            highlight.style.zIndex = '2001';
-        }
-    }, 400);
-}
+
         tooltip.style.display = 'flex';
         tooltip.className = 'onboarding-tooltip';
         tooltip.style.position = 'fixed';
@@ -1918,17 +1919,21 @@ if (isFabStep) {
         
                 if (!elementSelector) {
     highlight.style.display = 'block';
-    highlight.style.left = '0';
-    highlight.style.top = '0';
-    highlight.style.width = '100%';
-    highlight.style.height = '100%';
-    highlight.style.border = 'none';
-    highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+    highlight.style.left = '50%';
+    highlight.style.top = '50%';
+    highlight.style.width = '280px';
+    highlight.style.height = 'auto';
+    highlight.style.transform = 'translate(-50%, -50%)';
+    highlight.style.border = '3px solid var(--primary-dark)';
+    highlight.style.borderRadius = '16px';
+    highlight.style.boxShadow = 'none';
+    highlight.style.zIndex = '2001';
     tooltip.style.bottom = 'auto';
     tooltip.style.top = '50%';
     tooltip.style.left = '50%';
     tooltip.style.transform = 'translate(-50%, -50%)';
     tooltip.style.marginTop = '0';
+    tooltip.style.zIndex = '2002';
 } else {
             const target = document.querySelector(elementSelector);
             if (target && target.offsetParent !== null) {
