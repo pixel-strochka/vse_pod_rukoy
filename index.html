@@ -1385,6 +1385,17 @@
             overlay.style.display = 'none';
         }
         currentOnboardingStep = 0;
+    }
+
+    function resetToHabitsTab() {
+        const tab1 = document.querySelector('.tab-btn[data-tab="tab1"]');
+        if (tab1) tab1.click();
+        
+        if (isMobile()) {
+            const mobileTab1 = document.querySelector('.mobile-nav-btn[data-mobile-tab="tab1"]');
+            if (mobileTab1) mobileTab1.click();
+            showMobileSubtab('habits-goals');
+        }
     }    function getLevelInfo(totalXP) {
         let cumulativeXP = 0;
         for (let i = 0; i < LEVELS.length; i++) {
@@ -1590,6 +1601,7 @@
         }
         if (appData.nickname) {
             clearOnboardingDOM();
+            resetToHabitsTab();
             document.getElementById('onboardingOverlay').style.display = 'block';
             showOnboardingStep(0);
         } else {
@@ -1647,19 +1659,29 @@
         const highlight = document.getElementById('onboardingHighlight');
         const tooltip = document.getElementById('onboardingTooltip');
         
-        // Очистка предыдущего состояния
         highlight.style.display = 'none';
         highlight.style.border = '3px solid var(--primary-dark)';
         highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
         
+        // ПРИНУДИТЕЛЬНОЕ ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ДЛЯ КАЖДОГО ШАГА
+        const tabMap = {
+            '#annualSection': 'tab1',
+            '#habitSection': 'tab1',
+            '#addHabitRowBtn': 'tab1',
+            '#tasksSection': 'tab2',
+            '#addTaskRowBtn': 'tab2',
+            '#desktopBudgetSection': 'tab3',
+            '#desktopTransactionForm': 'tab3',
+            '#addTransactionBtnDesktop': 'tab3'
+        };
+        
         if (step.element && step.element.startsWith('.tab-btn')) {
             const tabBtn = document.querySelector(step.element);
             if (tabBtn) tabBtn.click();
-        }
-        
-        if (step.element && step.element.startsWith('.mobile-nav-btn')) {
-            const navBtn = document.querySelector(step.element);
-            if (navBtn) navBtn.click();
+        } else if (step.element && tabMap[step.element]) {
+            const tabId = tabMap[step.element];
+            const tabBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+            if (tabBtn) tabBtn.click();
         }
 
         tooltip.style.display = 'flex';
@@ -1703,14 +1725,20 @@
                     let left = rect.left;
                     let top = rect.bottom + offset;
                     if (step.element === '.tab-btn[data-tab="tab5"]') {
-                        top = rect.bottom + 40;
+                        const fixedRect = target.getBoundingClientRect();
+                        highlight.style.left = (fixedRect.left - 5) + 'px';
+                        highlight.style.top = (fixedRect.top - 5) + 'px';
+                        highlight.style.width = (fixedRect.width + 10) + 'px';
+                        highlight.style.height = (fixedRect.height + 10) + 'px';
+                        top = fixedRect.bottom + 30;
                         setTimeout(() => {
                             const newRect = target.getBoundingClientRect();
                             highlight.style.left = (newRect.left - 5) + 'px';
                             highlight.style.top = (newRect.top - 5) + 'px';
                             highlight.style.width = (newRect.width + 10) + 'px';
                             highlight.style.height = (newRect.height + 10) + 'px';
-                        }, 100);
+                            highlight.style.display = 'block';
+                        }, 200);
                     }
                     if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
                     if (left < 20) left = 20;
@@ -1757,30 +1785,38 @@
         const highlight = document.getElementById('onboardingHighlight');
         const tooltip = document.getElementById('onboardingTooltip');
         
-        // Очистка предыдущего состояния
         highlight.style.display = 'none';
         highlight.style.border = '3px solid var(--primary-dark)';
         highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
         
         let elementSelector = step.mobileElement || step.element;
         
-        if (elementSelector === '#addHabitRowBtn' || (elementSelector === '#fabBtn' && step.title.includes('привычк'))) {
-            const tab1 = document.querySelector('.mobile-nav-btn[data-mobile-tab="tab1"]');
-            if (tab1) tab1.click();
-            showMobileSubtab('habits-tracker');
-            elementSelector = '#fabBtn';
-        }
+        // ПРИНУДИТЕЛЬНОЕ ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК И ПОДВКЛАДОК ДЛЯ КАЖДОГО ШАГА
+        const mobileTabMap = {
+            '#mobileHabitGoals': { tab: 'tab1', subtab: 'habits-goals' },
+            '#mobileHabitTracker': { tab: 'tab1', subtab: 'habits-tracker' },
+            '#mobileHabitMonthly': { tab: 'tab1', subtab: 'habits-monthly' },
+            '#mobileHabitNotes': { tab: 'tab1', subtab: 'habits-notes' },
+            '#mobileHabitAnalytics': { tab: 'tab1', subtab: 'habits-analytics' },
+            '#addHabitRowBtn': { tab: 'tab1', subtab: 'habits-tracker', element: '#fabBtn' },
+            '#mobileTasksList': { tab: 'tab2', subtab: null },
+            '#addTaskRowBtn': { tab: 'tab2', subtab: null, element: '#fabBtn' },
+            '#mobileFinanceBudget': { tab: 'tab3', subtab: 'finance-budget' },
+            '#mobileFinanceTransactions': { tab: 'tab3', subtab: 'finance-transactions' },
+            '#mobileFinanceOverview': { tab: 'tab3', subtab: 'finance-overview' },
+            '#addTransactionBtn': { tab: 'tab3', subtab: 'finance-transactions' }
+        };
         
-        if (elementSelector === '#addTaskRowBtn') {
-            elementSelector = '#fabBtn';
-        }
-        if (elementSelector === '#addTransactionBtnDesktop') {
-            elementSelector = '#addTransactionBtn';
-        }
-        
-        if (elementSelector && elementSelector.startsWith('.tab-btn')) {
-            const tabBtn = document.querySelector(elementSelector);
-            if (tabBtn) tabBtn.click();
+        const mobileMap = mobileTabMap[elementSelector];
+        if (mobileMap) {
+            const navBtn = document.querySelector('.mobile-nav-btn[data-mobile-tab="' + mobileMap.tab + '"]');
+            if (navBtn) navBtn.click();
+            if (mobileMap.subtab) {
+                showMobileSubtab(mobileMap.subtab);
+            }
+            if (mobileMap.element) {
+                elementSelector = mobileMap.element;
+            }
         }
         
         if (elementSelector && elementSelector.startsWith('.mobile-nav-btn')) {
@@ -1797,7 +1833,23 @@
                 '#mobileHabitAnalytics': 'habits-analytics'
             };
             const subtabId = subtabMap[elementSelector];
-            if (subtabId) showMobileSubtab(subtabId);
+            if (subtabId) {
+                showMobileSubtab(subtabId);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const target = document.querySelector(elementSelector);
+                        if (target && target.offsetParent !== null) {
+                            const rect = target.getBoundingClientRect();
+                            highlight.style.left = (rect.left - 3) + 'px';
+                            highlight.style.top = (rect.top - 3) + 'px';
+                            highlight.style.width = (rect.width + 6) + 'px';
+                            highlight.style.height = (rect.height + 6) + 'px';
+                            highlight.style.display = 'block';
+                            highlight.style.zIndex = '2001';
+                        }
+                    });
+                });
+            }
         }
         
         if (elementSelector && elementSelector.startsWith('#mobileFinance')) {
@@ -1807,7 +1859,23 @@
                 '#mobileFinanceOverview': 'finance-overview'
             };
             const subtabId = subtabMap[elementSelector];
-            if (subtabId) showMobileSubtab(subtabId);
+            if (subtabId) {
+                showMobileSubtab(subtabId);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const target = document.querySelector(elementSelector);
+                        if (target && target.offsetParent !== null) {
+                            const rect = target.getBoundingClientRect();
+                            highlight.style.left = (rect.left - 3) + 'px';
+                            highlight.style.top = (rect.top - 3) + 'px';
+                            highlight.style.width = (rect.width + 6) + 'px';
+                            highlight.style.height = (rect.height + 6) + 'px';
+                            highlight.style.display = 'block';
+                            highlight.style.zIndex = '2001';
+                        }
+                    });
+                });
+            }
         }
 
         tooltip.style.display = 'flex';
@@ -1819,14 +1887,17 @@
         tooltip.style.maxWidth = '280px';
         tooltip.style.padding = '8px';
         tooltip.style.transform = 'translateX(-50%)';
+        tooltip.style.marginTop = '0';
         
         const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
         if (isFabStep) {
             tooltip.style.bottom = 'auto';
             tooltip.style.top = '20px';
+            tooltip.style.marginTop = '-20px';
         } else {
             tooltip.style.bottom = '76px';
             tooltip.style.top = 'auto';
+            tooltip.style.marginTop = '0';
         }
         
         document.getElementById('onboardingTitle').style.fontSize = '13px';
@@ -1840,21 +1911,26 @@
             highlight.style.height = '100%';
             highlight.style.border = 'none';
             highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
-            tooltip.style.bottom = '50%';
-            tooltip.style.top = 'auto';
-            tooltip.style.transform = 'translate(-50%, 50%)';
+            tooltip.style.bottom = 'auto';
+            tooltip.style.top = '50%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+            tooltip.style.marginTop = '0';
         } else {
             const target = document.querySelector(elementSelector);
-            if (target) {
+            if (target && target.offsetParent !== null) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 setTimeout(() => {
-                    highlight.style.display = 'block';
-                    const rect = target.getBoundingClientRect();
-                    highlight.style.left = (rect.left - 3) + 'px';
-                    highlight.style.top = (rect.top - 3) + 'px';
-                    highlight.style.width = (rect.width + 6) + 'px';
-                    highlight.style.height = (rect.height + 6) + 'px';
-                    highlight.style.zIndex = '2001';
+                    const freshTarget = document.querySelector(elementSelector);
+                    if (freshTarget && freshTarget.offsetParent !== null) {
+                        highlight.style.display = 'block';
+                        const freshRect = freshTarget.getBoundingClientRect();
+                        highlight.style.left = (freshRect.left - 3) + 'px';
+                        highlight.style.top = (freshRect.top - 3) + 'px';
+                        highlight.style.width = (freshRect.width + 6) + 'px';
+                        highlight.style.height = (freshRect.height + 6) + 'px';
+                        highlight.style.zIndex = '2001';
+                    }
                 }, 400);
             } else {
                 highlight.style.display = 'none';
@@ -1871,12 +1947,11 @@
     document.getElementById('restartOnboardingBtn').addEventListener('click', () => {
         localStorage.removeItem(ONBOARDING_KEY);
         clearOnboardingDOM();
-        const tab1 = document.querySelector('.tab-btn[data-tab="tab1"]');
-        if (tab1) tab1.click();
+        resetToHabitsTab();
         setTimeout(() => {
             document.getElementById('onboardingOverlay').style.display = 'block';
             showOnboardingStep(0);
-        }, 100);
+        }, 300);
     });
 
     document.getElementById('startBtn').addEventListener('click', () => {
@@ -1892,6 +1967,7 @@
         document.getElementById('welcomeOverlay').style.display = 'none';
         applyDeviceMode();
         clearOnboardingDOM();
+        resetToHabitsTab();
         document.getElementById('onboardingOverlay').style.display = 'block';
         showOnboardingStep(0);
         updateHeader();
