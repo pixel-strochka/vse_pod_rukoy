@@ -989,7 +989,7 @@
                 <div class="chart-container mt-3"><canvas id="budgetBarChartMobile"></canvas></div>
             </div>
 
-            <!-- ДЕСКТОП: ФИНАНСЫ БЮДЖЕТ (С ID ДЛЯ ОНБОРДИНГА) -->
+            <!-- ДЕСКТОП: БЮДЖЕТ (С ID ДЛЯ ОНБОРДИНГА) -->
             <div class="card p-5 desktop-only" id="desktopBudgetSection">
                 <p class="text-xs text-muted mb-1">Здесь планируй свой бюджет на месяц</p>
                 <p class="text-xs mb-3" style="color: var(--secondary-dark); font-style: italic;">«Береги копейку — рубль сам сбережётся.» — народная мудрость</p>
@@ -1026,10 +1026,11 @@
                 <div id="expenseLegend" class="space-y-2"></div>
             </div>
 
+            <!-- ДЕСКТОП: ТРАНЗАКЦИИ (С ID ДЛЯ ФОРМЫ) -->
             <div class="card p-5 desktop-only" id="transactionsSection">
                 <h2 class="text-lg font-bold mb-2">🧾 Транзакции</h2>
                 <p class="text-xs mb-3" style="color: var(--secondary-dark);">⚠️ Чтобы выбрать подкатегорию, сначала добавь её в бюджете</p>
-                <div class="grid md:grid-cols-5 gap-2 mb-3 text-sm">
+                <div class="grid md:grid-cols-5 gap-2 mb-3 text-sm" id="desktopTransactionForm">
                     <input type="date" id="transactionDateDesktop" class="inline-input">
                     <input type="text" id="transactionDescDesktop" placeholder="Описание" class="inline-input">
                     <select id="transactionCategoryDesktop" class="inline-input"></select>
@@ -1361,6 +1362,29 @@
             renderMobileBudget();
             renderMobileHabits();
         }
+    }
+
+    function clearOnboardingDOM() {
+        const highlight = document.getElementById('onboardingHighlight');
+        const tooltip = document.getElementById('onboardingTooltip');
+        const overlay = document.getElementById('onboardingOverlay');
+        
+        if (highlight) {
+            highlight.style.display = 'none';
+            highlight.style.left = '0';
+            highlight.style.top = '0';
+            highlight.style.width = '0';
+            highlight.style.height = '0';
+            highlight.style.border = 'none';
+            highlight.style.boxShadow = 'none';
+        }
+        if (tooltip) {
+            tooltip.style.display = 'none';
+        }
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        currentOnboardingStep = 0;
     }    function getLevelInfo(totalXP) {
         let cumulativeXP = 0;
         for (let i = 0; i < LEVELS.length; i++) {
@@ -1565,6 +1589,7 @@
             return;
         }
         if (appData.nickname) {
+            clearOnboardingDOM();
             document.getElementById('onboardingOverlay').style.display = 'block';
             showOnboardingStep(0);
         } else {
@@ -1582,7 +1607,7 @@
         { element: '#addTaskRowBtn', title: '📝 Задачи — добавление', text: 'Нажми сюда, чтобы добавить задачу. Заполни название, срок, приоритет. Подзадачи — внутри.', mobileElement: '#fabBtn', mobileText: 'Нажми «+» внизу, чтобы добавить задачу.' },
         { element: '.tab-btn[data-tab="tab3"]', title: '📊 Финансы — переключение', text: 'Переключаю на «Финансы». Здесь бюджет и траты.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab3"]', mobileText: 'Переключаю на «Финансы».' },
         { element: '#desktopBudgetSection', title: '📊 Финансы — бюджет', text: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией (Доходы, Траты и т.д.) и введи название. Например: «Продукты».', mobileElement: '#mobileFinanceBudget', mobileText: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией.' },
-        { element: '#transactionsSection', title: '📊 Финансы — транзакции', text: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете. Затем заполни: дату, описание, категорию, подкатегорию, сумму.', mobileElement: '#mobileFinanceTransactions', mobileText: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете.' },
+        { element: '#desktopTransactionForm', title: '📊 Финансы — транзакции', text: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете. Затем заполни: дату, описание, категорию, подкатегорию, сумму.', mobileElement: '#mobileFinanceTransactions', mobileText: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете.' },
         { element: '#addTransactionBtnDesktop', title: '📊 Финансы — добавление', text: 'Нажми сюда, чтобы добавить транзакцию. Не забудь: сначала подкатегория в бюджете!', mobileElement: '#addTransactionBtn', mobileText: 'Нажми сюда, чтобы добавить транзакцию.' },
         { element: '.tab-btn[data-tab="tab5"]', title: '🏆 Прогресс', text: 'Получай XP за действия! Открывай темы, обводки, ачивки.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab5"]', mobileText: 'Уровень, достижения, статистика.' },
         { element: '#tgButton', title: '📱 Telegram', text: 'Подпишись на канал «Пиксель и строчка»!' }
@@ -1600,6 +1625,7 @@
         if (index >= onboardingSteps.length) {
             localStorage.setItem(ONBOARDING_KEY, 'done');
             document.getElementById('onboardingOverlay').style.display = 'none';
+            clearOnboardingDOM();
             return;
         }
         currentOnboardingStep = index;
@@ -1620,6 +1646,11 @@
 
         const highlight = document.getElementById('onboardingHighlight');
         const tooltip = document.getElementById('onboardingTooltip');
+        
+        // Очистка предыдущего состояния
+        highlight.style.display = 'none';
+        highlight.style.border = '3px solid var(--primary-dark)';
+        highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
         
         if (step.element && step.element.startsWith('.tab-btn')) {
             const tabBtn = document.querySelector(step.element);
@@ -1656,8 +1687,6 @@
             tooltip.style.top = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
         } else {
-            highlight.style.border = '3px solid var(--primary-dark)';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             const target = document.querySelector(step.element);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1701,6 +1730,7 @@
         if (index >= onboardingSteps.length) {
             localStorage.setItem(ONBOARDING_KEY, 'done');
             document.getElementById('onboardingOverlay').style.display = 'none';
+            clearOnboardingDOM();
             return;
         }
         currentOnboardingStep = index;
@@ -1726,6 +1756,11 @@
 
         const highlight = document.getElementById('onboardingHighlight');
         const tooltip = document.getElementById('onboardingTooltip');
+        
+        // Очистка предыдущего состояния
+        highlight.style.display = 'none';
+        highlight.style.border = '3px solid var(--primary-dark)';
+        highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
         
         let elementSelector = step.mobileElement || step.element;
         
@@ -1760,6 +1795,16 @@
                 '#mobileHabitMonthly': 'habits-monthly',
                 '#mobileHabitNotes': 'habits-notes',
                 '#mobileHabitAnalytics': 'habits-analytics'
+            };
+            const subtabId = subtabMap[elementSelector];
+            if (subtabId) showMobileSubtab(subtabId);
+        }
+        
+        if (elementSelector && elementSelector.startsWith('#mobileFinance')) {
+            const subtabMap = {
+                '#mobileFinanceBudget': 'finance-budget',
+                '#mobileFinanceTransactions': 'finance-transactions',
+                '#mobileFinanceOverview': 'finance-overview'
             };
             const subtabId = subtabMap[elementSelector];
             if (subtabId) showMobileSubtab(subtabId);
@@ -1799,8 +1844,6 @@
             tooltip.style.top = 'auto';
             tooltip.style.transform = 'translate(-50%, 50%)';
         } else {
-            highlight.style.border = '3px solid var(--primary-dark)';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             const target = document.querySelector(elementSelector);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1823,9 +1866,11 @@
     document.getElementById('onboardingSkip').addEventListener('click', () => {
         localStorage.setItem(ONBOARDING_KEY, 'done');
         document.getElementById('onboardingOverlay').style.display = 'none';
+        clearOnboardingDOM();
     });
     document.getElementById('restartOnboardingBtn').addEventListener('click', () => {
         localStorage.removeItem(ONBOARDING_KEY);
+        clearOnboardingDOM();
         const tab1 = document.querySelector('.tab-btn[data-tab="tab1"]');
         if (tab1) tab1.click();
         setTimeout(() => {
@@ -1846,6 +1891,7 @@
         
         document.getElementById('welcomeOverlay').style.display = 'none';
         applyDeviceMode();
+        clearOnboardingDOM();
         document.getElementById('onboardingOverlay').style.display = 'block';
         showOnboardingStep(0);
         updateHeader();
@@ -2162,7 +2208,7 @@
         document.getElementById('profileNickname').value = e.target.value;
     });
 
-    // БАГ 7: Клик по аватарке на мобильном открывает «Профиль»
+    // Клик по аватарке: на мобильном открывает «Профиль»
     document.getElementById('headerPet').addEventListener('click', () => {
         switchTab('tab5');
         if (isMobile()) {
@@ -3997,9 +4043,7 @@
                 document.body.classList.remove('force-desktop', 'force-mobile');
                 document.querySelectorAll('.device-select-btn').forEach(btn => btn.classList.remove('active'));
                 
-                document.getElementById('onboardingOverlay').style.display = 'none';
-                document.getElementById('onboardingHighlight').style.display = 'none';
-                currentOnboardingStep = 0;
+                clearOnboardingDOM();
                 
                 settingsPanel.classList.remove('open');
                 settingsOverlay.classList.remove('open');
