@@ -1002,7 +1002,7 @@
                     <div class="card p-4"><h4 class="font-bold mb-2 text-sm flex items-center justify-between">💳 Долги <button class="btn btn-outline text-xs py-1 px-2" onclick="addBudgetItem('debts')">+</button></h4><div id="debtsRows"></div></div>
                 </div>
             </div>
-            <div class="grid lg:grid-cols-2 gap-4 desktop-only">
+<div class="grid lg:grid-cols-2 gap-4 desktop-only">
                 <div class="card p-5" id="financeSummary">
                     <h2 class="text-lg font-bold mb-2">💰 Обзор</h2>
                     <div class="overflow-x-auto">
@@ -1172,7 +1172,8 @@
 <script>
 (function() {
     console.log('%c Всё под рукой ', 'background: #FCA5A5; color: #fff; font-size: 20px; font-weight: bold; padding: 10px; border-radius: 8px;');
-    console.log('%c Автор: @six7_hub · t.me/six7_hub ', 'background: #93C5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');console.log('%c Код писал дипсик. Он старался, но вышло не сразу. ', 'background: #C4B5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');
+    console.log('%c Автор: @six7_hub · t.me/six7_hub ', 'background: #93C5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');
+    console.log('%c Код писал дипсик. Он старался, но вышло не сразу. ', 'background: #C4B5FD; color: #fff; font-size: 14px; padding: 6px; border-radius: 6px;');
     console.log('%c Зато теперь работает. ', 'color: #34d399; font-size: 12px;');
 
     const STORAGE_KEY = 'six7_hub_data';
@@ -1695,19 +1696,17 @@
         document.getElementById('onboardingTitle').style.fontSize = '18px';
         document.getElementById('onboardingText').style.fontSize = '14px';
         
-                if (!step.element) {
+        if (!step.element) {
             highlight.style.display = 'block';
             highlight.style.left = '0';
             highlight.style.top = '0';
             highlight.style.width = '100%';
             highlight.style.height = '100%';
             highlight.style.border = 'none';
-            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.7)';
-            highlight.style.zIndex = '2001';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             tooltip.style.left = '50%';
             tooltip.style.top = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
-            tooltip.style.zIndex = '2002';
         } else {
             const target = document.querySelector(step.element);
             if (target) {
@@ -1725,21 +1724,22 @@
                     let left = rect.left;
                     let top = rect.bottom + offset;
                     if (step.element === '.tab-btn[data-tab="tab5"]') {
-    const fixedRect = target.getBoundingClientRect();
-    highlight.style.left = (fixedRect.left - 5) + 'px';
-    highlight.style.top = (fixedRect.top + fixedRect.height) + 'px'; // Ровно на высоту вкладки ниже
-    highlight.style.width = (fixedRect.width + 10) + 'px';
-    highlight.style.height = (fixedRect.height + 10) + 'px';
-    top = fixedRect.bottom + fixedRect.height + 30;
-    setTimeout(() => {
-        const newRect = target.getBoundingClientRect();
-        highlight.style.left = (newRect.left - 5) + 'px';
-        highlight.style.top = (newRect.top + newRect.height) + 'px'; // Ровно на высоту вкладки ниже
-        highlight.style.width = (newRect.width + 10) + 'px';
-        highlight.style.height = (newRect.height + 10) + 'px';
-        highlight.style.display = 'block';
-    }, 200);
-}                    if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
+                        const fixedRect = target.getBoundingClientRect();
+                        highlight.style.left = (fixedRect.left - 5) + 'px';
+                        highlight.style.top = (fixedRect.top - 5) + 'px';
+                        highlight.style.width = (fixedRect.width + 10) + 'px';
+                        highlight.style.height = (fixedRect.height + 10) + 'px';
+                        top = fixedRect.bottom + 30;
+                        setTimeout(() => {
+                            const newRect = target.getBoundingClientRect();
+                            highlight.style.left = (newRect.left - 5) + 'px';
+                            highlight.style.top = (newRect.top - 5) + 'px';
+                            highlight.style.width = (newRect.width + 10) + 'px';
+                            highlight.style.height = (newRect.height + 10) + 'px';
+                            highlight.style.display = 'block';
+                        }, 200);
+                    }
+                    if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
                     if (left < 20) left = 20;
                     if (top + tooltipHeight > window.innerHeight - 20) top = rect.top - tooltipHeight - offset;
                     if (top < 20) top = 20;
@@ -1902,14 +1902,19 @@
         document.getElementById('onboardingTitle').style.fontSize = '13px';
         document.getElementById('onboardingText').style.fontSize = '11px';
         
-                        if (!elementSelector) {
-            highlight.style.display = 'none';
+        if (!elementSelector) {
+            highlight.style.display = 'block';
+            highlight.style.left = '0';
+            highlight.style.top = '0';
+            highlight.style.width = '100%';
+            highlight.style.height = '100%';
+            highlight.style.border = 'none';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             tooltip.style.bottom = 'auto';
             tooltip.style.top = '50%';
             tooltip.style.left = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
             tooltip.style.marginTop = '0';
-            tooltip.style.zIndex = '2002';
         } else {
             const target = document.querySelector(elementSelector);
             if (target && target.offsetParent !== null) {
