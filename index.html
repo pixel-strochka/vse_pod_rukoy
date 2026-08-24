@@ -278,7 +278,7 @@
         .theme-btn.locked { opacity: 0.35; }
         .theme-btn.locked::after { content: "🔒"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
         
-        .onboarding-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; }
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 2000; pointer-events: none; background: rgba(0,0,0,0.5); }
         .onboarding-highlight { position: absolute; border: 3px solid var(--primary-dark); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); transition: all 0.4s ease; pointer-events: none; z-index: 2001; }
         .onboarding-tooltip { position: fixed; background: var(--card); color: var(--text); border-radius: 16px; padding: 20px; max-width: 360px; max-height: 85vh; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); pointer-events: auto; z-index: 2002; display: flex; flex-direction: column; }
         .onboarding-tooltip .tooltip-content { overflow-y: auto; flex: 1; margin-bottom: 12px; }
@@ -1877,7 +1877,20 @@
                 });
             }
         }
-
+if (isFabStep) {
+    setTimeout(() => {
+        const fab = document.querySelector('#fabBtn');
+        if (fab && fab.offsetParent !== null) {
+            highlight.style.display = 'block';
+            const fabRect = fab.getBoundingClientRect();
+            highlight.style.left = (fabRect.left - 5) + 'px';
+            highlight.style.top = (fabRect.top - 5) + 'px';
+            highlight.style.width = (fabRect.width + 10) + 'px';
+            highlight.style.height = (fabRect.height + 10) + 'px';
+            highlight.style.zIndex = '2001';
+        }
+    }, 400);
+}
         tooltip.style.display = 'flex';
         tooltip.className = 'onboarding-tooltip';
         tooltip.style.position = 'fixed';
@@ -1889,16 +1902,16 @@
         tooltip.style.transform = 'translateX(-50%)';
         tooltip.style.marginTop = '0';
         
-        const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
-        if (isFabStep) {
-            tooltip.style.bottom = 'auto';
-            tooltip.style.top = '20px';
-            tooltip.style.marginTop = '-20px';
-        } else {
-            tooltip.style.bottom = '76px';
-            tooltip.style.top = 'auto';
-            tooltip.style.marginTop = '0';
-        }
+        const isFabStep = elementSelector === '#fabBtn';
+if (isFabStep) {
+    tooltip.style.bottom = 'auto';
+    tooltip.style.top = '80px';
+    tooltip.style.marginTop = '0';
+} else {
+    tooltip.style.bottom = '76px';
+    tooltip.style.top = 'auto';
+    tooltip.style.marginTop = '0';
+}
         
         document.getElementById('onboardingTitle').style.fontSize = '13px';
         document.getElementById('onboardingText').style.fontSize = '11px';
