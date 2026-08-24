@@ -330,8 +330,10 @@
         .level-up-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 5000; background: rgba(0,0,0,0.6); }
         .level-up-card { background: var(--card); color: var(--text); border-radius: 24px; padding: 32px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
         
-        .settings-panel { position: fixed; top: 60px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; display: none; max-width: 340px; max-height: 80vh; overflow-y: auto; }
+        .settings-panel { position: fixed; top: 60px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1001; display: none; max-width: 340px; max-height: 80vh; overflow-y: auto; }
         .settings-panel.open { display: block; }
+        .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.15); backdrop-filter: blur(2px); z-index: 1000; }
+        .settings-overlay.open { display: block; }
         
         .habit-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .nowrap { white-space: nowrap; }
@@ -460,7 +462,7 @@
         }
         
         @media print {
-            .settings-panel, .onboarding-overlay, .welcome-overlay, .level-up-overlay, 
+            .settings-panel, .settings-overlay, .onboarding-overlay, .welcome-overlay, .level-up-overlay, 
             .toast, .level-toast, .no-print, .mobile-nav, .fab,
             .mobile-subtabs, .mobile-tasks-view, .mobile-habit-section,
             .mobile-finance-section, .mobile-progress-section {
@@ -558,8 +560,7 @@
             }
         }
     </style>
-</head>
-<body data-mode="light" data-theme="theme-coral" class="min-h-screen flex justify-center py-3 px-2 sm:px-4">
+</head><body data-mode="light" data-theme="theme-coral" class="min-h-screen flex justify-center py-3 px-2 sm:px-4">
 
 <!-- 
     «Всё под рукой» · Автор: @six7_hub · Канал: t.me/six7_hub
@@ -639,6 +640,9 @@
         <button id="levelUpCloseBtn" class="btn btn-primary px-6 py-2">Отлично!</button>
     </div>
 </div>
+
+<!-- ОВЕРЛЕЙ НАСТРОЕК -->
+<div id="settingsOverlay" class="settings-overlay"></div>
 
 <!-- ПАНЕЛЬ НАСТРОЕК -->
 <div id="settingsPanel" class="settings-panel">
@@ -847,8 +851,7 @@
                     <div id="habitProgressListDesktop" class="mt-3 space-y-2"></div>
                 </div>
             </div>
-        </div>
-        <!-- ВКЛАДКА 2: ЗАДАЧИ -->
+        </div>        <!-- ВКЛАДКА 2: ЗАДАЧИ -->
         <div id="tab2" class="tab-panel hidden space-y-5">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div class="card p-3 text-center"><div class="text-xs text-muted">Выполнено</div><div id="tasksDoneKpi" class="text-xl font-bold">0/0</div></div>
@@ -986,8 +989,8 @@
                 <div class="chart-container mt-3"><canvas id="budgetBarChartMobile"></canvas></div>
             </div>
 
-            <!-- ДЕСКТОП: ФИНАНСЫ -->
-            <div class="card p-5 desktop-only">
+            <!-- ДЕСКТОП: ФИНАНСЫ БЮДЖЕТ (С ID ДЛЯ ОНБОРДИНГА) -->
+            <div class="card p-5 desktop-only" id="desktopBudgetSection">
                 <p class="text-xs text-muted mb-1">Здесь планируй свой бюджет на месяц</p>
                 <p class="text-xs mb-3" style="color: var(--secondary-dark); font-style: italic;">«Береги копейку — рубль сам сбережётся.» — народная мудрость</p>
                 <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -1045,8 +1048,7 @@
                     </table>
                 </div>
             </div>
-        </div>
-        <!-- ВКЛАДКА 4: ИНСТРУКЦИЯ -->
+        </div>        <!-- ВКЛАДКА 4: ИНСТРУКЦИЯ -->
         <div id="tab4" class="tab-panel hidden">
             <div class="text-center mb-4">
                 <h2 class="text-2xl font-bold">📖 Инструкция</h2>
@@ -1345,10 +1347,9 @@
         }
         
         document.querySelectorAll('.device-select-btn').forEach(btn => {
-            if (btn.dataset.device === deviceMode) {
+            btn.classList.remove('active');
+            if (deviceMode && btn.dataset.device === deviceMode) {
                 btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
             }
         });
         
@@ -1360,8 +1361,7 @@
             renderMobileBudget();
             renderMobileHabits();
         }
-    }
-    function getLevelInfo(totalXP) {
+    }    function getLevelInfo(totalXP) {
         let cumulativeXP = 0;
         for (let i = 0; i < LEVELS.length; i++) {
             for (let j = 0; j < 5; j++) {
@@ -1544,8 +1544,19 @@
     });
 
     const settingsPanel = document.getElementById('settingsPanel');
-    document.getElementById('settingsToggleBtn').addEventListener('click', () => { settingsPanel.classList.toggle('open'); });
-    document.getElementById('settingsCloseBtn').addEventListener('click', () => { settingsPanel.classList.remove('open'); });
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    document.getElementById('settingsToggleBtn').addEventListener('click', () => { 
+        settingsPanel.classList.toggle('open'); 
+        settingsOverlay.classList.toggle('open', settingsPanel.classList.contains('open'));
+    });
+    document.getElementById('settingsCloseBtn').addEventListener('click', () => { 
+        settingsPanel.classList.remove('open'); 
+        settingsOverlay.classList.remove('open');
+    });
+    settingsOverlay.addEventListener('click', () => { 
+        settingsPanel.classList.remove('open'); 
+        settingsOverlay.classList.remove('open');
+    });
 
     function startOnboarding() {
         if (localStorage.getItem(ONBOARDING_KEY)) return;
@@ -1565,12 +1576,12 @@
         { element: null, title: '👋 Добро пожаловать!', text: 'Это «Всё под рукой» — твой личный органайзер. Здесь ты будешь вести привычки, задачи и финансы. Нажимай «Далее».', mobileElement: null, mobileText: 'Это «Всё под рукой» — твой личный органайзер. Нажимай «Далее».' },
         { element: '#annualSection', title: '🌍 Цели на год', text: 'Ставь долгосрочные цели по 5 сферам: 💰 Финансы, 📚 Саморазвитие, 💼 Карьера, 🌿 Здоровье, ❤️ Отношения. Нажми «+ Цель». У целей могут быть подцели.', mobileElement: '#mobileHabitGoals', mobileText: 'Ставь цели по 5 сферам. Нажми «+ Цель». У целей могут быть подцели.' },
         { element: '#habitSection', title: '📋 Трекер привычек', text: 'Каждая строка — привычка. Кнопки Пн-Вс — дни недели. Отмечай галочками дни, когда сделал. Месяц меняется сверху.', mobileElement: '#mobileHabitTracker', mobileText: 'Каждая карточка — привычка. Выбирай дни недели. Отмечай дни в календаре.' },
-        { element: '#addHabitRowBtn', title: '➕ Добавление привычки', text: 'Нажми сюда, чтобы добавить привычку. Введи название и выбери дни.', mobileElement: null, mobileText: 'Нажми «+» внизу, чтобы добавить привычку.' },
+        { element: '#addHabitRowBtn', title: '➕ Добавление привычки', text: 'Нажми сюда, чтобы добавить привычку. Введи название и выбери дни.', mobileElement: '#fabBtn', mobileText: 'Нажми «+» внизу, чтобы добавить привычку.' },
         { element: '.tab-btn[data-tab="tab2"]', title: '📝 Задачи — переключение', text: 'Переключаю на «Задачи». Здесь список дел.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab2"]', mobileText: 'Переключаю на «Задачи».' },
         { element: '#tasksSection', title: '📝 Задачи — таблица', text: 'Таблица задач. Колонки: 📌 закрепление, название, срок, приоритет, статус, категория, подзадачи. Нажми 📌, чтобы закрепить.', mobileElement: '#mobileTasksList', mobileText: 'Карточки задач. Нажми на карточку, чтобы раскрыть детали: срок, приоритет, подзадачи.' },
-        { element: '#addTaskRowBtn', title: '📝 Задачи — добавление', text: 'Нажми сюда, чтобы добавить задачу. Заполни название, срок, приоритет. Подзадачи — внутри.', mobileElement: null, mobileText: 'Нажми «+» внизу, чтобы добавить задачу.' },
+        { element: '#addTaskRowBtn', title: '📝 Задачи — добавление', text: 'Нажми сюда, чтобы добавить задачу. Заполни название, срок, приоритет. Подзадачи — внутри.', mobileElement: '#fabBtn', mobileText: 'Нажми «+» внизу, чтобы добавить задачу.' },
         { element: '.tab-btn[data-tab="tab3"]', title: '📊 Финансы — переключение', text: 'Переключаю на «Финансы». Здесь бюджет и траты.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab3"]', mobileText: 'Переключаю на «Финансы».' },
-        { element: '#transactionsSection', title: '📊 Финансы — бюджет', text: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией (Доходы, Траты и т.д.) и введи название. Например: «Продукты».', mobileElement: '#mobileFinanceBudget', mobileText: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией.' },
+        { element: '#desktopBudgetSection', title: '📊 Финансы — бюджет', text: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией (Доходы, Траты и т.д.) и введи название. Например: «Продукты».', mobileElement: '#mobileFinanceBudget', mobileText: 'Сначала добавь подкатегории. Нажми «+» рядом с категорией.' },
         { element: '#transactionsSection', title: '📊 Финансы — транзакции', text: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете. Затем заполни: дату, описание, категорию, подкатегорию, сумму.', mobileElement: '#mobileFinanceTransactions', mobileText: 'Чтобы выбрать подкатегорию, сначала добавь её в бюджете.' },
         { element: '#addTransactionBtnDesktop', title: '📊 Финансы — добавление', text: 'Нажми сюда, чтобы добавить транзакцию. Не забудь: сначала подкатегория в бюджете!', mobileElement: '#addTransactionBtn', mobileText: 'Нажми сюда, чтобы добавить транзакцию.' },
         { element: '.tab-btn[data-tab="tab5"]', title: '🏆 Прогресс', text: 'Получай XP за действия! Открывай темы, обводки, ачивки.', mobileElement: '.mobile-nav-btn[data-mobile-tab="tab5"]', mobileText: 'Уровень, достижения, статистика.' },
@@ -1634,11 +1645,19 @@
         document.getElementById('onboardingText').style.fontSize = '14px';
         
         if (!step.element) {
-            highlight.style.display = 'none';
+            highlight.style.display = 'block';
+            highlight.style.left = '0';
+            highlight.style.top = '0';
+            highlight.style.width = '100%';
+            highlight.style.height = '100%';
+            highlight.style.border = 'none';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             tooltip.style.left = '50%';
             tooltip.style.top = '50%';
             tooltip.style.transform = 'translate(-50%, -50%)';
         } else {
+            highlight.style.border = '3px solid var(--primary-dark)';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             const target = document.querySelector(step.element);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1655,7 +1674,14 @@
                     let left = rect.left;
                     let top = rect.bottom + offset;
                     if (step.element === '.tab-btn[data-tab="tab5"]') {
-                        top = rect.bottom + 20;
+                        top = rect.bottom + 40;
+                        setTimeout(() => {
+                            const newRect = target.getBoundingClientRect();
+                            highlight.style.left = (newRect.left - 5) + 'px';
+                            highlight.style.top = (newRect.top - 5) + 'px';
+                            highlight.style.width = (newRect.width + 10) + 'px';
+                            highlight.style.height = (newRect.height + 10) + 'px';
+                        }, 100);
                     }
                     if (left + tooltipWidth > window.innerWidth - 20) left = Math.max(20, window.innerWidth - tooltipWidth - 20);
                     if (left < 20) left = 20;
@@ -1703,6 +1729,20 @@
         
         let elementSelector = step.mobileElement || step.element;
         
+        if (elementSelector === '#addHabitRowBtn' || (elementSelector === '#fabBtn' && step.title.includes('привычк'))) {
+            const tab1 = document.querySelector('.mobile-nav-btn[data-mobile-tab="tab1"]');
+            if (tab1) tab1.click();
+            showMobileSubtab('habits-tracker');
+            elementSelector = '#fabBtn';
+        }
+        
+        if (elementSelector === '#addTaskRowBtn') {
+            elementSelector = '#fabBtn';
+        }
+        if (elementSelector === '#addTransactionBtnDesktop') {
+            elementSelector = '#addTransactionBtn';
+        }
+        
         if (elementSelector && elementSelector.startsWith('.tab-btn')) {
             const tabBtn = document.querySelector(elementSelector);
             if (tabBtn) tabBtn.click();
@@ -1728,23 +1768,39 @@
         tooltip.style.display = 'flex';
         tooltip.className = 'onboarding-tooltip';
         tooltip.style.position = 'fixed';
-        tooltip.style.bottom = '76px';
         tooltip.style.left = '50%';
         tooltip.style.right = 'auto';
-        tooltip.style.top = 'auto';
         tooltip.style.width = '280px';
         tooltip.style.maxWidth = '280px';
         tooltip.style.padding = '8px';
         tooltip.style.transform = 'translateX(-50%)';
         
+        const isFabStep = elementSelector === '#fabBtn' || elementSelector === '#addTransactionBtn';
+        if (isFabStep) {
+            tooltip.style.bottom = 'auto';
+            tooltip.style.top = '20px';
+        } else {
+            tooltip.style.bottom = '76px';
+            tooltip.style.top = 'auto';
+        }
+        
         document.getElementById('onboardingTitle').style.fontSize = '13px';
         document.getElementById('onboardingText').style.fontSize = '11px';
         
         if (!elementSelector) {
-            highlight.style.display = 'none';
+            highlight.style.display = 'block';
+            highlight.style.left = '0';
+            highlight.style.top = '0';
+            highlight.style.width = '100%';
+            highlight.style.height = '100%';
+            highlight.style.border = 'none';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             tooltip.style.bottom = '50%';
+            tooltip.style.top = 'auto';
             tooltip.style.transform = 'translate(-50%, 50%)';
         } else {
+            highlight.style.border = '3px solid var(--primary-dark)';
+            highlight.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
             const target = document.querySelector(elementSelector);
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1960,8 +2016,7 @@
         } else {
             fab.style.display = 'none';
         }
-    }
-    document.getElementById('fabBtn').addEventListener('click', () => {
+    }    document.getElementById('fabBtn').addEventListener('click', () => {
         // Обработчик устанавливается в updateFAB
     });
 
@@ -2107,8 +2162,12 @@
         document.getElementById('profileNickname').value = e.target.value;
     });
 
+    // БАГ 7: Клик по аватарке на мобильном открывает «Профиль»
     document.getElementById('headerPet').addEventListener('click', () => {
         switchTab('tab5');
+        if (isMobile()) {
+            showMobileSubtab('progress-profile');
+        }
         showToast('Настройки профиля открыты');
     });
 
@@ -2739,8 +2798,7 @@
                 cont.appendChild(div);
             });
         });
-    }
-    const notesArea = document.getElementById('notesArea');
+    }    const notesArea = document.getElementById('notesArea');
     const notesAreaDesktop = document.getElementById('notesAreaDesktop');
     
     if (notesArea) {
@@ -3787,8 +3845,7 @@
         addTransactionFromForm(date, desc, cat, sub, amount);
         document.getElementById('transactionDescDesktop').value = '';
         document.getElementById('transactionAmountDesktop').value = '';
-    });
-    function renderProgress() {
+    });    function renderProgress() {
         const container = document.getElementById('achievementsContainer');
         const containerDesktop = document.getElementById('achievementsContainerDesktop');
         
@@ -3924,6 +3981,7 @@
 
     document.getElementById('printBtn').addEventListener('click', () => {
         document.getElementById('settingsPanel').classList.remove('open');
+        document.getElementById('settingsOverlay').classList.remove('open');
         setTimeout(() => window.print(), 100);
     });
 
@@ -3937,6 +3995,15 @@
                 localStorage.removeItem(DEVICE_MODE_KEY);
                 deviceMode = null;
                 document.body.classList.remove('force-desktop', 'force-mobile');
+                document.querySelectorAll('.device-select-btn').forEach(btn => btn.classList.remove('active'));
+                
+                document.getElementById('onboardingOverlay').style.display = 'none';
+                document.getElementById('onboardingHighlight').style.display = 'none';
+                currentOnboardingStep = 0;
+                
+                settingsPanel.classList.remove('open');
+                settingsOverlay.classList.remove('open');
+                
                 appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
                 settings = { theme: 'theme-coral', dark: false };
                 isFirstLaunch = true;
@@ -3944,7 +4011,6 @@
                 saveSettings();
                 renderAll();
                 applyTheme();
-                settingsPanel.classList.remove('open');
                 showToast('Все данные сброшены');
                 document.getElementById('welcomeOverlay').style.display = 'flex';
             }
