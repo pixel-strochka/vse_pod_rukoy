@@ -1876,6 +1876,8 @@
             }
         }
 
+                const isFabStep = elementSelector === '#fabBtn';
+        
         if (isFabStep) {
             setTimeout(() => {
                 const fab = document.querySelector('#fabBtn');
@@ -1890,6 +1892,7 @@
                 }
             }, 400);
         }
+        
         tooltip.style.display = 'flex';
         tooltip.className = 'onboarding-tooltip';
         tooltip.style.position = 'fixed';
@@ -1901,7 +1904,6 @@
         tooltip.style.transform = 'translateX(-50%)';
         tooltip.style.marginTop = '0';
         
-                const isFabStep = elementSelector === '#fabBtn';
         if (isFabStep) {
             tooltip.style.setProperty('bottom', 'auto', 'important');
             tooltip.style.setProperty('top', '80px', 'important');
