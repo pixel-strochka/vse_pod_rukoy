@@ -1941,8 +1941,21 @@
                         highlight.style.zIndex = '2001';
                     }
                 }, 400);
-            } else {
+                        } else {
                 highlight.style.display = 'none';
+            }
+        }
+
+        if (isFabStep) {
+            const fab = document.querySelector('#fabBtn');
+            if (fab && fab.offsetParent !== null) {
+                highlight.style.display = 'block';
+                const fabRect = fab.getBoundingClientRect();
+                highlight.style.left = (fabRect.left - 5) + 'px';
+                highlight.style.top = (fabRect.top - 5) + 'px';
+                highlight.style.width = (fabRect.width + 10) + 'px';
+                highlight.style.height = (fabRect.height + 10) + 'px';
+                highlight.style.zIndex = '2001';
             }
         }
     }
