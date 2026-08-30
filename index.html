@@ -3201,9 +3201,10 @@
             return;
         }
         
-        filteredTasks.forEach(task => {
+                filteredTasks.forEach(task => {
             const card = document.createElement('div');
             card.className = 'mobile-task-card' + (task.pinned ? ' pinned' : '');
+            if (task.expanded) card.classList.add('expanded');
             
             const topRow = document.createElement('div');
             topRow.className = 'flex items-center gap-2';
@@ -3438,11 +3439,12 @@
             
             card.appendChild(details);
             
-                        card.addEventListener('click', (e) => {
+            card.addEventListener('click', (e) => {
                 if (e.target.closest('input, select, button')) return;
                 card.classList.toggle('expanded');
-            });
-            
+                task.expanded = card.classList.contains('expanded');
+                saveData();
+            });            
             container.appendChild(card);
         });
     }
