@@ -3320,12 +3320,13 @@
             pinBtn.style.cursor = 'pointer';
             pinBtn.style.background = 'none';
             pinBtn.style.border = 'none';
-            pinBtn.addEventListener('click', (e) => { 
+                        pinBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                task.pinned = !task.pinned; 
-                saveData(); 
-                renderTasks(); 
-                renderMobileTasks(); 
+                task.pinned = !task.pinned;
+                saveData();
+                renderTasks();
+                card.classList.add('expanded');
+                // Не вызываем renderMobileTasks(), чтобы карточка не свернулась
             });
             pinRow.appendChild(pinBtn);
             details.appendChild(pinRow);
@@ -3407,13 +3408,13 @@
             addSubBtn.style.cursor = 'pointer';
             addSubBtn.style.background = 'none';
             addSubBtn.style.border = 'none';
-            addSubBtn.addEventListener('click', (e) => {
+                        addSubBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 task.subtasks.push({ id: uid(), name: 'Новая подзадача', done: false });
                 saveData();
                 renderTasks();
-                renderMobileTasks();
-                checkAchievements();
+                card.classList.add('expanded');
+                // Не вызываем renderMobileTasks(), чтобы карточка не свернулась
             });
             subtasksContainer.appendChild(addSubBtn);
             
