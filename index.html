@@ -2020,8 +2020,9 @@
         });
     });
 
-    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
             switchTab(btn.dataset.mobileTab);
         });
     });
@@ -2106,8 +2107,9 @@
         updateFAB();
     }
 
-    document.querySelectorAll('.mobile-subtab').forEach(btn => {
-        btn.addEventListener('click', () => {
+        document.querySelectorAll('.mobile-subtab').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
             showMobileSubtab(btn.dataset.mobileSubtab);
         });
     });
