@@ -2020,9 +2020,8 @@
         });
     });
 
-        document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
             switchTab(btn.dataset.mobileTab);
         });
     });
@@ -2061,13 +2060,7 @@
         if (financeSubtabs) financeSubtabs.style.display = tabId === 'tab3' ? 'flex' : 'none';
         if (progressSubtabs) progressSubtabs.style.display = tabId === 'tab5' ? 'flex' : 'none';
         
-        if (tabId === 'tab1') {
-            showMobileSubtab('habits-goals');
-        } else if (tabId === 'tab3') {
-            showMobileSubtab('finance-budget');
-        } else if (tabId === 'tab5') {
-            showMobileSubtab('progress-level');
-        }
+        
     }
 
     function showMobileSubtab(subtabId) {
@@ -2107,9 +2100,8 @@
         updateFAB();
     }
 
-        document.querySelectorAll('.mobile-subtab').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
+    document.querySelectorAll('.mobile-subtab').forEach(btn => {
+        btn.addEventListener('click', () => {
             showMobileSubtab(btn.dataset.mobileSubtab);
         });
     });
