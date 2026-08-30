@@ -3320,9 +3320,10 @@
             pinBtn.style.cursor = 'pointer';
             pinBtn.style.background = 'none';
             pinBtn.style.border = 'none';
-            pinBtn.addEventListener('click', (e) => { 
+                        pinBtn.addEventListener('click', (e) => { 
                 e.stopPropagation();
-                task.pinned = !task.pinned; 
+                task.pinned = !task.pinned;
+                task.expanded = true;
                 saveData(); 
                 renderTasks(); 
                 renderMobileTasks(); 
@@ -3388,9 +3389,10 @@
                 subDel.style.cursor = 'pointer';
                 subDel.style.background = 'none';
                 subDel.style.border = 'none';
-                subDel.addEventListener('click', (e) => {
+                                subDel.addEventListener('click', (e) => {
                     e.stopPropagation();
                     task.subtasks = task.subtasks.filter(s => s.id !== sub.id);
+                    task.expanded = true;
                     saveData();
                     renderTasks();
                     renderMobileTasks();
@@ -3407,9 +3409,10 @@
             addSubBtn.style.cursor = 'pointer';
             addSubBtn.style.background = 'none';
             addSubBtn.style.border = 'none';
-            addSubBtn.addEventListener('click', (e) => {
+                        addSubBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 task.subtasks.push({ id: uid(), name: 'Новая подзадача', done: false });
+                task.expanded = true;
                 saveData();
                 renderTasks();
                 renderMobileTasks();
