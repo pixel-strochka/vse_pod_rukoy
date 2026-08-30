@@ -2548,7 +2548,7 @@
                 btn.textContent = day;
                 btn.type = 'button';
                 btn.className = 'day-selector-btn' + (habit.activeDays[idx] ? ' active' : '');
-                btn.addEventListener('click', () => {
+                                btn.addEventListener('click', () => {
                     habit.activeDays[idx] = !habit.activeDays[idx];
                     btn.classList.toggle('active', habit.activeDays[idx]);
                     saveData();
@@ -2664,12 +2664,11 @@
                 btn.textContent = day;
                 btn.type = 'button';
                 btn.className = 'mobile-day-btn' + (habit.activeDays[idx] ? ' active' : '');
-                                btn.addEventListener('click', () => {
+                btn.addEventListener('click', () => {
                     habit.activeDays[idx] = !habit.activeDays[idx];
                     btn.classList.toggle('active', habit.activeDays[idx]);
                     saveData();
                     renderHabitMatrix();
-                    renderMobileHabits();
                     renderAnalytics();
                 });
                 daysContainer.appendChild(btn);
@@ -3320,13 +3319,12 @@
             pinBtn.style.cursor = 'pointer';
             pinBtn.style.background = 'none';
             pinBtn.style.border = 'none';
-                        pinBtn.addEventListener('click', (e) => {
+            pinBtn.addEventListener('click', (e) => { 
                 e.stopPropagation();
-                task.pinned = !task.pinned;
-                saveData();
-                renderTasks();
-                card.classList.add('expanded');
-                // Не вызываем renderMobileTasks(), чтобы карточка не свернулась
+                task.pinned = !task.pinned; 
+                saveData(); 
+                renderTasks(); 
+                renderMobileTasks(); 
             });
             pinRow.appendChild(pinBtn);
             details.appendChild(pinRow);
@@ -3408,13 +3406,13 @@
             addSubBtn.style.cursor = 'pointer';
             addSubBtn.style.background = 'none';
             addSubBtn.style.border = 'none';
-                        addSubBtn.addEventListener('click', (e) => {
+            addSubBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 task.subtasks.push({ id: uid(), name: 'Новая подзадача', done: false });
                 saveData();
                 renderTasks();
-                card.classList.add('expanded');
-                // Не вызываем renderMobileTasks(), чтобы карточка не свернулась
+                renderMobileTasks();
+                checkAchievements();
             });
             subtasksContainer.appendChild(addSubBtn);
             
