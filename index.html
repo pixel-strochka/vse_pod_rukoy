@@ -2664,11 +2664,12 @@
                 btn.textContent = day;
                 btn.type = 'button';
                 btn.className = 'mobile-day-btn' + (habit.activeDays[idx] ? ' active' : '');
-                btn.addEventListener('click', () => {
+                                btn.addEventListener('click', () => {
                     habit.activeDays[idx] = !habit.activeDays[idx];
                     btn.classList.toggle('active', habit.activeDays[idx]);
                     saveData();
                     renderHabitMatrix();
+                    renderMobileHabits();
                     renderAnalytics();
                 });
                 daysContainer.appendChild(btn);
@@ -3438,8 +3439,8 @@
             
             card.appendChild(details);
             
-            card.addEventListener('click', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+                        card.addEventListener('click', (e) => {
+                if (e.target.closest('input, select, button')) return;
                 card.classList.toggle('expanded');
             });
             
